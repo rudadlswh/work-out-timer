@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+#if !APP_EXTENSION
 @main
 struct timerApp: App {
     var body: some Scene {
@@ -15,3 +16,4 @@ struct timerApp: App {
         }
     }
 }
+#endif
