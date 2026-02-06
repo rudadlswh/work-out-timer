@@ -17,12 +17,7 @@ struct ContentView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            LinearGradient(
-                gradient: Gradient(colors: [TimerTheme.backgroundTop, TimerTheme.backgroundBottom]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            TimerBackgroundView()
 
             if isModePickerVisible {
                 Picker("운동 방식", selection: $workoutMode) {
