@@ -6,20 +6,65 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		2B5A47B34DA84243A5C7E773 /* HIITWidgetExtension.appex in CopyFiles */ = {isa = PBXBuildFile; fileRef = B6CD284154D248AE9C0CE595 /* HIITWidgetExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		8EC9720A1C384EDD827DE50A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9A3A27332F3463230077A48E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D6A69947D8F14558B92F6A9B;
+			remoteInfo = HIITWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D4FB5D5E8DC948159912B9F3 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				2B5A47B34DA84243A5C7E773 /* HIITWidgetExtension.appex in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		9A3A273B2F3463230077A48E /* timer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = timer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B6CD284154D248AE9C0CE595 /* HIITWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = HIITWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		948F0CDD9BD1488F85D73F38 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
 		9A3A273D2F3463230077A48E /* timer */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = timer;
+			sourceTree = "<group>";
+		};
+		C590367A2D0D47148095B379 /* HIITWidgetExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = HIITWidgetExtension;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		9A3A27382F3463230077A48E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A4B7881DCC4D45DFBB246DDB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +78,8 @@
 			isa = PBXGroup;
 			children = (
 				9A3A273D2F3463230077A48E /* timer */,
+				948F0CDD9BD1488F85D73F38 /* Shared */,
+				C590367A2D0D47148095B379 /* HIITWidgetExtension */,
 				9A3A273C2F3463230077A48E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -40,6 +87,7 @@
 		9A3A273C2F3463230077A48E /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				B6CD284154D248AE9C0CE595 /* HIITWidgetExtension.appex */,
 				9A3A273B2F3463230077A48E /* timer.app */,
 			);
 			name = Products;
@@ -55,12 +103,15 @@
 				9A3A27372F3463230077A48E /* Sources */,
 				9A3A27382F3463230077A48E /* Frameworks */,
 				9A3A27392F3463230077A48E /* Resources */,
+				D4FB5D5E8DC948159912B9F3 /* CopyFiles */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				81F2C435F60B4ECF938F129D /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
+				948F0CDD9BD1488F85D73F38 /* Shared */,
 				9A3A273D2F3463230077A48E /* timer */,
 			);
 			name = timer;
@@ -69,6 +120,29 @@
 			productName = timer;
 			productReference = 9A3A273B2F3463230077A48E /* timer.app */;
 			productType = "com.apple.product-type.application";
+		};
+		D6A69947D8F14558B92F6A9B /* HIITWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D120C97065E34E1195903E46 /* Build configuration list for PBXNativeTarget "HIITWidgetExtension" */;
+			buildPhases = (
+				634225B76FAC4AB78D082C20 /* Sources */,
+				A4B7881DCC4D45DFBB246DDB /* Frameworks */,
+				2F2C3516834F45639657D6A2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				948F0CDD9BD1488F85D73F38 /* Shared */,
+				C590367A2D0D47148095B379 /* HIITWidgetExtension */,
+			);
+			name = HIITWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = HIITWidgetExtension;
+			productReference = B6CD284154D248AE9C0CE595 /* HIITWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -81,6 +155,9 @@
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					9A3A273A2F3463230077A48E = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					D6A69947D8F14558B92F6A9B = {
 						CreatedOnToolsVersion = 26.2;
 					};
 				};
@@ -100,11 +177,19 @@
 			projectRoot = "";
 			targets = (
 				9A3A273A2F3463230077A48E /* timer */,
+				D6A69947D8F14558B92F6A9B /* HIITWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		2F2C3516834F45639657D6A2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9A3A27392F3463230077A48E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -115,6 +200,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		634225B76FAC4AB78D082C20 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9A3A27372F3463230077A48E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -124,7 +216,41 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		81F2C435F60B4ECF938F129D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D6A69947D8F14558B92F6A9B /* HIITWidgetExtension */;
+			targetProxy = 8EC9720A1C384EDD827DE50A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		745640D8540C49D299BC2BF1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Config/HIITWidgetExtension-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.timer.hiitwidgetextension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_EXTENSION $(inherited)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		9A3A27442F34632A0077A48E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -246,10 +372,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -288,10 +416,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -323,6 +453,32 @@
 			};
 			name = Release;
 		};
+		FB5AEFB633F848A69F28F7DD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Config/HIITWidgetExtension-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.timer.hiitwidgetextension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG APP_EXTENSION $(inherited)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -340,6 +496,15 @@
 			buildConfigurations = (
 				9A3A27472F34632A0077A48E /* Debug */,
 				9A3A27482F34632A0077A48E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D120C97065E34E1195903E46 /* Build configuration list for PBXNativeTarget "HIITWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FB5AEFB633F848A69F28F7DD /* Debug */,
+				745640D8540C49D299BC2BF1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
