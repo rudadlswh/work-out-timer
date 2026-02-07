@@ -1,9 +1,12 @@
 import SwiftUI
+#if os(iOS) && !targetEnvironment(macCatalyst)
 import ActivityKit
+#endif
 import UserNotifications
 
 struct EmomTabView: View {
     @Binding var isModePickerVisible: Bool
+    @EnvironmentObject private var heartRateManager: HeartRateManager
 
     @State private var intervalMinutes: Int = 1
     @State private var totalMinutes: Int = 5
@@ -12,13 +15,24 @@ struct EmomTabView: View {
     @State private var nextBeep: Int = 0
     @State private var timer: Timer? = nil
     @State private var isRunning: Bool = false
+#if os(iOS) && !targetEnvironment(macCatalyst)
     @State private var activity: Activity<HIITAttributes>? = nil
+#endif
     @State private var exerciseInput: String = ""
 
     private let minuteOptions = Array(1...60)
 
     private var exercises: [String] {
         TimerUtilities.parseExercises(exerciseInput)
+    }
+
+    private func currentRoundInfo() -> (rounds: Int, label: String, exercise: String) {
+        let rounds = max(1, ((totalMinutes * 60 - remainingSeconds) / (intervalMinutes * 60)) + 1)
+        let label = intervalMinutes == 1 ? "\(rounds)분" : "\(rounds)라운드"
+        let exercise = exercises.isEmpty
+            ? "운동 없음"
+            : exercises[(rounds - 1) % exercises.count]
+        return (rounds, label, exercise)
     }
 
     var body: some View {
@@ -35,8 +49,8 @@ struct EmomTabView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear(perform: updateModePickerVisibility)
-        .onChange(of: isRunning) { _ in updateModePickerVisibility() }
-        .onChange(of: countdown) { _ in updateModePickerVisibility() }
+        .onChange(of: isRunning, initial: false) { _, _ in updateModePickerVisibility() }
+        .onChange(of: countdown, initial: false) { _, _ in updateModePickerVisibility() }
     }
 
     private var inputView: some View {
@@ -68,9 +82,11 @@ struct EmomTabView: View {
                 Text("운동 목록(쉼표로 구분)")
                     .font(.subheadline)
                     .foregroundStyle(TimerTheme.secondaryText)
-                TextField("플랭크, 스내치, 버피", text: $exerciseInput)
+                TextField("",text: $exerciseInput)
                     .disableAutocorrection(true)
+#if canImport(UIKit)
                     .textInputAutocapitalization(.never)
+#endif
                     .padding(10)
                     .background(Color.black.opacity(0.25))
                     .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
@@ -98,14 +114,10 @@ struct EmomTabView: View {
     }
 
     private var runningView: some View {
-        let rounds = max(1, ((totalMinutes * 60 - remainingSeconds) / (intervalMinutes * 60)) + 1)
-        let roundLabel = intervalMinutes == 1 ? "\(rounds)분" : "\(rounds)라운드"
-        let currentExercise = exercises.isEmpty
-            ? "운동 없음"
-            : exercises[(rounds - 1) % exercises.count]
+        let info = currentRoundInfo()
 
         return VStack(spacing: 32) {
-            Text(roundLabel)
+            Text(info.label)
                 .font(.system(size: 48, weight: .bold))
                 .foregroundStyle(TimerTheme.primaryText)
                 .shadow(color: Color.black.opacity(0.25), radius: 3, x: 0, y: 2)
@@ -113,11 +125,14 @@ struct EmomTabView: View {
                 Text("이번 동작")
                     .font(.headline)
                     .foregroundStyle(TimerTheme.secondaryText)
-                Text(currentExercise)
+                Text(info.exercise)
                     .font(.system(size: 36, weight: .bold))
                     .foregroundStyle(TimerTheme.primaryText)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
+            }
+            if let bpm = heartRateManager.currentBpm {
+                HeartRateMetricView(title: "현재 심박", bpm: bpm)
             }
             Text(TimerUtilities.formatTime(nextBeep))
                 .font(.system(size: 32, weight: .semibold))
@@ -135,6 +150,9 @@ struct EmomTabView: View {
             Text("완료!")
                 .font(.title)
                 .foregroundStyle(TimerTheme.primaryText)
+            if let average = heartRateManager.averageBpm {
+                HeartRateMetricView(title: "평균 심박", bpm: average)
+            }
             Button("다시 시작") {
                 resetAll()
             }
@@ -156,10 +174,12 @@ struct EmomTabView: View {
     private func startCountdownTimer(then startAction: @escaping () -> Void) {
         countdown = 5
         isRunning = false
+        sendCountdownState()
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
             if let cd = countdown, cd > 1 {
                 countdown = cd - 1
+                sendCountdownState()
             } else {
                 timer?.invalidate()
                 startAction()
@@ -173,8 +193,10 @@ struct EmomTabView: View {
         nextBeep = interval * 60
         isRunning = true
         countdown = 0
+        heartRateManager.start()
         startLiveActivity(interval: interval, total: total)
         TimerUtilities.playBeep()
+        sendRunningState()
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
             if remainingSeconds > 0 {
                 remainingSeconds -= 1
@@ -184,10 +206,13 @@ struct EmomTabView: View {
                     nextBeep = interval * 60
                 }
                 updateLiveActivity()
+                sendRunningState()
             } else {
                 timer?.invalidate()
                 isRunning = false
+                heartRateManager.stop()
                 endLiveActivity()
+                sendCompleteState()
             }
         }
     }
@@ -196,8 +221,10 @@ struct EmomTabView: View {
         timer?.invalidate()
         isRunning = false
         countdown = nil
+        heartRateManager.stop()
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
         endLiveActivity()
+        sendIdleState()
     }
 
     private func resetAll() {
@@ -206,8 +233,52 @@ struct EmomTabView: View {
         timer?.invalidate()
         remainingSeconds = 0
         nextBeep = 0
+        heartRateManager.reset()
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
         endLiveActivity()
+        sendIdleState()
+    }
+
+    private func sendCountdownState() {
+        guard let cd = countdown else { return }
+        heartRateManager.sendTimerState(
+            mode: TimerSyncMode.emom,
+            phase: TimerSyncPhase.countdown,
+            displaySeconds: cd,
+            headline: "카운트다운",
+            exercise: nil
+        )
+    }
+
+    private func sendRunningState() {
+        let info = currentRoundInfo()
+        heartRateManager.sendTimerState(
+            mode: TimerSyncMode.emom,
+            phase: TimerSyncPhase.running,
+            displaySeconds: nextBeep,
+            headline: info.label,
+            exercise: info.exercise
+        )
+    }
+
+    private func sendCompleteState() {
+        heartRateManager.sendTimerState(
+            mode: TimerSyncMode.emom,
+            phase: TimerSyncPhase.complete,
+            displaySeconds: 0,
+            headline: "완료",
+            exercise: nil
+        )
+    }
+
+    private func sendIdleState() {
+        heartRateManager.sendTimerState(
+            mode: TimerSyncMode.emom,
+            phase: TimerSyncPhase.idle,
+            displaySeconds: 0,
+            headline: "",
+            exercise: nil
+        )
     }
 
     private func scheduleIntervalNotifications(interval: Int, total: Int) {
@@ -224,29 +295,39 @@ struct EmomTabView: View {
         }
     }
 
+#if os(iOS) && !targetEnvironment(macCatalyst)
     private func startLiveActivity(interval: Int, total: Int) {
         let attr = HIITAttributes(totalMinutes: total, intervalMinutes: interval)
         let state = HIITAttributes.ContentState(remainingSeconds: total * 60, nextBeep: interval * 60, isRunning: true)
+        let content = ActivityContent(state: state, staleDate: nil)
         if ActivityAuthorizationInfo().areActivitiesEnabled {
-            Task {
-                activity = try? await Activity<HIITAttributes>.request(attributes: attr, contentState: state, pushType: nil)
-            }
+            activity = try? Activity<HIITAttributes>.request(attributes: attr, content: content, pushType: nil)
         }
     }
 
     private func updateLiveActivity() {
         guard let activity else { return }
         let state = HIITAttributes.ContentState(remainingSeconds: remainingSeconds, nextBeep: nextBeep, isRunning: isRunning)
+        let content = ActivityContent(state: state, staleDate: nil)
         Task {
-            await activity.update(using: state)
+            await activity.update(content)
         }
     }
 
     private func endLiveActivity() {
         guard let activity else { return }
+        let state = HIITAttributes.ContentState(remainingSeconds: remainingSeconds, nextBeep: nextBeep, isRunning: false)
+        let content = ActivityContent(state: state, staleDate: nil)
         Task {
-            await activity.end(dismissalPolicy: .immediate)
+            await activity.end(content, dismissalPolicy: .immediate)
             self.activity = nil
         }
     }
+#else
+    private func startLiveActivity(interval: Int, total: Int) {}
+
+    private func updateLiveActivity() {}
+
+    private func endLiveActivity() {}
+#endif
 }

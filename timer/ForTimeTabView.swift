@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ForTimeTabView: View {
     @Binding var isModePickerVisible: Bool
+    @EnvironmentObject private var heartRateManager: HeartRateManager
 
     @State private var totalMinutes: Int = 5
     @State private var countdown: Int? = nil
@@ -14,6 +15,10 @@ struct ForTimeTabView: View {
 
     private var exercises: [String] {
         TimerUtilities.parseExercises(exerciseInput)
+    }
+
+    private var exerciseSummary: String {
+        exercises.isEmpty ? "운동 목록 없음" : exercises.joined(separator: " / ")
     }
 
     var body: some View {
@@ -30,8 +35,8 @@ struct ForTimeTabView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear(perform: updateModePickerVisibility)
-        .onChange(of: isRunning) { _ in updateModePickerVisibility() }
-        .onChange(of: countdown) { _ in updateModePickerVisibility() }
+        .onChange(of: isRunning, initial: false) { _, _ in updateModePickerVisibility() }
+        .onChange(of: countdown, initial: false) { _, _ in updateModePickerVisibility() }
     }
 
     private var inputView: some View {
@@ -91,6 +96,9 @@ struct ForTimeTabView: View {
                 .font(.system(size: 48, weight: .bold))
                 .foregroundStyle(TimerTheme.primaryText)
                 .shadow(color: Color.black.opacity(0.25), radius: 3, x: 0, y: 2)
+            if let bpm = heartRateManager.currentBpm {
+                HeartRateMetricView(title: "현재 심박", bpm: bpm)
+            }
             if exercises.isEmpty {
                 Text("운동 목록 없음")
                     .font(.headline)
@@ -122,6 +130,9 @@ struct ForTimeTabView: View {
             Text("소요 시간 \(TimerUtilities.formatTime(elapsedSeconds))")
                 .font(.headline)
                 .foregroundStyle(TimerTheme.secondaryText)
+            if let average = heartRateManager.averageBpm {
+                HeartRateMetricView(title: "평균 심박", bpm: average)
+            }
             Button("다시 시작") {
                 resetAll()
             }
@@ -143,10 +154,12 @@ struct ForTimeTabView: View {
     private func startCountdownTimer(then startAction: @escaping () -> Void) {
         countdown = 5
         isRunning = false
+        sendCountdownState()
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
             if let cd = countdown, cd > 1 {
                 countdown = cd - 1
+                sendCountdownState()
             } else {
                 timer?.invalidate()
                 startAction()
@@ -158,16 +171,21 @@ struct ForTimeTabView: View {
         elapsedSeconds = 0
         isRunning = true
         countdown = 0
+        heartRateManager.start()
         TimerUtilities.playBeep()
+        sendRunningState()
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
             let totalSeconds = total * 60
             if elapsedSeconds + 1 >= totalSeconds {
                 elapsedSeconds = totalSeconds
                 timer?.invalidate()
                 isRunning = false
+                heartRateManager.stop()
                 TimerUtilities.playBeep()
+                sendCompleteState()
             } else {
                 elapsedSeconds += 1
+                sendRunningState()
             }
         }
     }
@@ -176,6 +194,8 @@ struct ForTimeTabView: View {
         timer?.invalidate()
         isRunning = false
         countdown = 0
+        heartRateManager.stop()
+        sendIdleState()
     }
 
     private func resetAll() {
@@ -183,5 +203,48 @@ struct ForTimeTabView: View {
         isRunning = false
         timer?.invalidate()
         elapsedSeconds = 0
+        heartRateManager.reset()
+        sendIdleState()
+    }
+
+    private func sendCountdownState() {
+        guard let cd = countdown else { return }
+        heartRateManager.sendTimerState(
+            mode: TimerSyncMode.forTime,
+            phase: TimerSyncPhase.countdown,
+            displaySeconds: cd,
+            headline: "카운트다운",
+            exercise: nil
+        )
+    }
+
+    private func sendRunningState() {
+        heartRateManager.sendTimerState(
+            mode: TimerSyncMode.forTime,
+            phase: TimerSyncPhase.running,
+            displaySeconds: elapsedSeconds,
+            headline: "경과 시간",
+            exercise: exerciseSummary
+        )
+    }
+
+    private func sendCompleteState() {
+        heartRateManager.sendTimerState(
+            mode: TimerSyncMode.forTime,
+            phase: TimerSyncPhase.complete,
+            displaySeconds: elapsedSeconds,
+            headline: "소요 시간",
+            exercise: nil
+        )
+    }
+
+    private func sendIdleState() {
+        heartRateManager.sendTimerState(
+            mode: TimerSyncMode.forTime,
+            phase: TimerSyncPhase.idle,
+            displaySeconds: 0,
+            headline: "",
+            exercise: nil
+        )
     }
 }

@@ -12,6 +12,7 @@ enum WorkoutMode: String, CaseIterable, Identifiable {
 struct ContentView: View {
     @State private var workoutMode: WorkoutMode = .emom
     @State private var isModePickerVisible: Bool = true
+    @State private var isSettingsPresented: Bool = false
 
     @Environment(\.scenePhase) private var scenePhase
 
@@ -31,27 +32,53 @@ struct ContentView: View {
                 .zIndex(1)
             }
 
-            modeView
+            TabView(selection: $workoutMode) {
+                EmomTabView(isModePickerVisible: $isModePickerVisible)
+                    .tag(WorkoutMode.emom)
+                AmrapTabView(isModePickerVisible: $isModePickerVisible)
+                    .tag(WorkoutMode.amrap)
+                ForTimeTabView(isModePickerVisible: $isModePickerVisible)
+                    .tag(WorkoutMode.forTime)
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+
+            settingsButton
         }
         .tint(TimerTheme.actionTint)
         .onAppear(perform: requestNotificationPermission)
-        .onChange(of: scenePhase) { newPhase in
+        .onChange(of: scenePhase, initial: false) { _, newPhase in
             if newPhase == .inactive || newPhase == .background {
                 // 옵션: 알림 예약 유지 또는 정리
             }
         }
+        .sheet(isPresented: $isSettingsPresented) {
+            NavigationStack {
+                SettingsView()
+            }
+            .tint(TimerTheme.actionTint)
+        }
     }
 
-    @ViewBuilder
-    private var modeView: some View {
-        switch workoutMode {
-        case .emom:
-            EmomTabView(isModePickerVisible: $isModePickerVisible)
-        case .amrap:
-            AmrapTabView(isModePickerVisible: $isModePickerVisible)
-        case .forTime:
-            ForTimeTabView(isModePickerVisible: $isModePickerVisible)
+    private var settingsButton: some View {
+        HStack {
+            Spacer()
+            Button(action: { isSettingsPresented = true }) {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(TimerTheme.primaryText)
+                    .padding(10)
+                    .background(Color.black.opacity(0.35))
+                    .clipShape(Circle())
+                    .overlay(
+                        Circle()
+                            .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                    )
+            }
+            .accessibilityLabel("설정")
         }
+        .padding(.top, isModePickerVisible ? 64 : 16)
+        .padding(.trailing, 16)
+        .zIndex(2)
     }
 
     private func requestNotificationPermission() {
@@ -63,4 +90,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environmentObject(HeartRateManager())
 }

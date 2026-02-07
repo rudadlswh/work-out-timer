@@ -2,12 +2,6 @@ import WidgetKit
 import ActivityKit
 import SwiftUI
 
-enum WidgetTab: String, CaseIterable, Identifiable {
-    case emom = "EMOM"
-    case amrap = "AMRAP"
-    var id: String { rawValue }
-}
-
 struct HIITWidgetEntry: TimelineEntry {
     let date: Date
 }
@@ -50,28 +44,11 @@ struct AmrapWidgetTab: View {
 }
 
 struct HIITWidgetView: View {
-    @State private var selectedTab: WidgetTab = .emom
+    @Environment(\.widgetFamily) private var family
 
     var body: some View {
         VStack {
-            Picker("위젯 탭", selection: $selectedTab) {
-                ForEach(WidgetTab.allCases) { tab in
-                    Text(tab.rawValue).tag(tab)
-                }
-            }
-            .pickerStyle(.segmented)
-            .padding([.top, .horizontal])
-
-            Spacer()
-
-            switch selectedTab {
-            case .emom:
-                EmomWidgetTab()
-            case .amrap:
-                AmrapWidgetTab()
-            }
-
-            Spacer()
+            content
         }
         .containerBackground(for: .widget) {
             LinearGradient(
@@ -82,6 +59,28 @@ struct HIITWidgetView: View {
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch family {
+        case .systemSmall:
+            VStack(spacing: 6) {
+                Text("HIIT 타이머")
+                    .font(.headline)
+                Text("EMOM • AMRAP")
+                    .font(.caption)
+            }
+            .padding()
+        default:
+            HStack(spacing: 12) {
+                EmomWidgetTab()
+                Divider()
+                    .background(Color.white.opacity(0.2))
+                AmrapWidgetTab()
+            }
+            .padding()
         }
     }
 }
