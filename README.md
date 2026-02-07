@@ -8,6 +8,9 @@ SwiftUI로 만든 HIIT 타이머 앱입니다.
 - FOR TIME: 총 시간 제한, 운동 목록 표시(줄바꿈), 중지 시 소요 시간 표시.
 - EMOM Live Activity 지원.
 - 위젯 확장(세그먼트 탭 프리뷰).
+- Apple Watch 앱 제공(EMOM/AMRAP/FOR TIME 화면 + 심박 측정).
+- iPhone ↔ Apple Watch 실시간 연동 상태/핑 테스트 표시.
+- iPhone 타이머 시작 시 워치에 동일한 시간/운동 정보 표시.
 
 ## 기능 설명
 - 시작 흐름: 시작 버튼 → 5초 카운트다운 → 타이머 시작.
@@ -43,15 +46,19 @@ flowchart TD
 - `timer/EmomTabView.swift`: EMOM UI + 타이머 로직
 - `timer/AmrapTabView.swift`: AMRAP UI + 타이머 로직
 - `timer/ForTimeTabView.swift`: FOR TIME UI + 타이머 로직
+- `timer/SettingsView.swift`: 워치 연동 상태/핑/심박 확인 설정 화면
+- `timer/HeartRateManager.swift`: 워치 연결 + 심박/타이머 동기화 처리
 - `timer/TimerTheme.swift`: 공통 컬러
 - `timer/TimerUtilities.swift`: 공통 유틸
 - `HIITWidgetExtension/`: WidgetKit 확장
 - `Shared/HIITActivity.swift`: Live Activity 속성
+- `timerWatchExtension/`: 워치 앱(타이머 UI + 심박 수집)
 
 ## 빌드/실행
 1. Xcode에서 `timer.xcodeproj` 열기
 2. `timer` 스킴 선택
 3. 시뮬레이터 또는 디바이스에서 실행
+4. 워치 앱 확인 시 `timerWatch` 스킴 선택
 
 CLI 빌드:
 ```
@@ -61,3 +68,4 @@ xcodebuild -project timer.xcodeproj -scheme timer -sdk iphonesimulator -configur
 ## 참고
 - 알림 허용이 필요합니다(끝 알람).
 - AMRAP 라운드는 실행 화면 더블탭으로 수동 체크합니다.
+- 워치 연동은 iPhone/Watch 모두 앱이 실행 중일 때 실시간 표시가 됩니다.
