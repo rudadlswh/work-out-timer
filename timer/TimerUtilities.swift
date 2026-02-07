@@ -19,3 +19,16 @@ enum TimerUtilities {
             .filter { !$0.isEmpty }
     }
 }
+
+enum TimerSyncMode {
+    static let emom = "EMOM"
+    static let amrap = "AMRAP"
+    static let forTime = "FOR TIME"
+}
+
+enum TimerSyncPhase {
+    static let idle = "idle"
+    static let countdown = "countdown"
+    static let running = "running"
+    static let complete = "complete"
+}

@@ -7,10 +7,26 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		11F7F21D1ED3B37FEB23BBF4 /* timerWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = E59E778CACFCF5C7D4AEBD3B /* timerWatch.app */; };
+		24B93257ABF0C5795A4E6071 /* timerWatchExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 5B4C56493E454EFEB69CC910 /* timerWatchExtension.appex */; };
 		2B5A47B34DA84243A5C7E773 /* HIITWidgetExtension.appex in CopyFiles */ = {isa = PBXBuildFile; fileRef = B6CD284154D248AE9C0CE595 /* HIITWidgetExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		3C3A2F838FACA4DA925B9774 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 98254734FACFE8AFE235012A /* Assets.xcassets */; };
+		577DBA86B59599FE67A4D978 /* WatchContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C8962BCD90C243CAF581B1C /* WatchContentView.swift */; };
+		5DA500165BF9575698C75DA2 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 320027EF24D94A208BE481DC /* Foundation.framework */; };
+		5E6532B963C7F962A3A23D40 /* WatchWorkoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC057E51E79CD13CA49C8335 /* WatchWorkoutManager.swift */; };
+		78B92A0CF4FC4E4BA98FAFE2 /* TimerWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F851030D7A9990DD23B9296D /* TimerWatchApp.swift */; };
+		8B679F1E3531AEF4E05D46A4 /* ExtensionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63DBC2B8E41A5AE7542FBD61 /* ExtensionDelegate.swift */; };
+		9434B224BFE67F788D3CAA0B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 320027EF24D94A208BE481DC /* Foundation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		4560E75C5862E1162E66CC6C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9A3A27332F3463230077A48E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CF1179050BF60AA617AE13B3;
+			remoteInfo = timerWatchExtension;
+		};
 		8EC9720A1C384EDD827DE50A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9A3A27332F3463230077A48E /* Project object */;
@@ -18,9 +34,38 @@
 			remoteGlobalIDString = D6A69947D8F14558B92F6A9B;
 			remoteInfo = HIITWidgetExtension;
 		};
+		EEF9D99DDAEB62FC9668A0EF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9A3A27332F3463230077A48E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 56309F7E46B8F260060AEE7D;
+			remoteInfo = timerWatch;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		050ADEBEE98E28585F3C47E3 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Watch;
+			dstSubfolderSpec = 16;
+			files = (
+				11F7F21D1ED3B37FEB23BBF4 /* timerWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		061E7C159331ECD99E8ADB42 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				24B93257ABF0C5795A4E6071 /* timerWatchExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D4FB5D5E8DC948159912B9F3 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -34,8 +79,19 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		320027EF24D94A208BE481DC /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS11.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		5B4C56493E454EFEB69CC910 /* timerWatchExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = timerWatchExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		63DBC2B8E41A5AE7542FBD61 /* ExtensionDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExtensionDelegate.swift; sourceTree = "<group>"; };
+		6FD8F888BB7C8F6D87C78357 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8C8962BCD90C243CAF581B1C /* WatchContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchContentView.swift; sourceTree = "<group>"; };
+		98254734FACFE8AFE235012A /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9A3A273B2F3463230077A48E /* timer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = timer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A7508226CD7F7CF8DC0EA793 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AC057E51E79CD13CA49C8335 /* WatchWorkoutManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchWorkoutManager.swift; sourceTree = "<group>"; };
 		B6CD284154D248AE9C0CE595 /* HIITWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = HIITWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		E59E778CACFCF5C7D4AEBD3B /* timerWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = timerWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F31ED00E048D30A02B15C4DF /* TimerWatchExtension.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = TimerWatchExtension.entitlements; sourceTree = "<group>"; };
+		F851030D7A9990DD23B9296D /* TimerWatchApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TimerWatchApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -57,6 +113,22 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		2357C49BFCE7AD9F060AFE55 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9434B224BFE67F788D3CAA0B /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		60020B05D1E429C97C6DD181 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5DA500165BF9575698C75DA2 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9A3A27382F3463230077A48E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -74,6 +146,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1C688E05901964DA681B289D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AA86A5C2E21232260F12D96B /* watchOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		9A3A27322F3463230077A48E = {
 			isa = PBXGroup;
 			children = (
@@ -81,6 +161,9 @@
 				948F0CDD9BD1488F85D73F38 /* Shared */,
 				C590367A2D0D47148095B379 /* HIITWidgetExtension */,
 				9A3A273C2F3463230077A48E /* Products */,
+				1C688E05901964DA681B289D /* Frameworks */,
+				EC3612D26D7D066E92FBD558 /* timerWatch */,
+				CB3DB1B132DE8DC37622973A /* timerWatchExtension */,
 			);
 			sourceTree = "<group>";
 		};
@@ -89,13 +172,64 @@
 			children = (
 				B6CD284154D248AE9C0CE595 /* HIITWidgetExtension.appex */,
 				9A3A273B2F3463230077A48E /* timer.app */,
+				E59E778CACFCF5C7D4AEBD3B /* timerWatch.app */,
+				5B4C56493E454EFEB69CC910 /* timerWatchExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		AA86A5C2E21232260F12D96B /* watchOS */ = {
+			isa = PBXGroup;
+			children = (
+				320027EF24D94A208BE481DC /* Foundation.framework */,
+			);
+			name = watchOS;
+			sourceTree = "<group>";
+		};
+		CB3DB1B132DE8DC37622973A /* timerWatchExtension */ = {
+			isa = PBXGroup;
+			children = (
+				6FD8F888BB7C8F6D87C78357 /* Info.plist */,
+				F31ED00E048D30A02B15C4DF /* TimerWatchExtension.entitlements */,
+				F851030D7A9990DD23B9296D /* TimerWatchApp.swift */,
+				63DBC2B8E41A5AE7542FBD61 /* ExtensionDelegate.swift */,
+				8C8962BCD90C243CAF581B1C /* WatchContentView.swift */,
+				AC057E51E79CD13CA49C8335 /* WatchWorkoutManager.swift */,
+			);
+			path = timerWatchExtension;
+			sourceTree = "<group>";
+		};
+		EC3612D26D7D066E92FBD558 /* timerWatch */ = {
+			isa = PBXGroup;
+			children = (
+				A7508226CD7F7CF8DC0EA793 /* Info.plist */,
+				98254734FACFE8AFE235012A /* Assets.xcassets */,
+			);
+			path = timerWatch;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		56309F7E46B8F260060AEE7D /* timerWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 83161ECDDEB7D76ADE91C66F /* Build configuration list for PBXNativeTarget "timerWatch" */;
+			buildPhases = (
+				B2914D2C4B6C8D32AA023207 /* Sources */,
+				2357C49BFCE7AD9F060AFE55 /* Frameworks */,
+				7D2F997365E851D48C10487C /* Resources */,
+				061E7C159331ECD99E8ADB42 /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E8EE1986EC0591AF4CB2FA7C /* PBXTargetDependency */,
+			);
+			name = timerWatch;
+			productName = timerWatch;
+			productReference = E59E778CACFCF5C7D4AEBD3B /* timerWatch.app */;
+			productType = "com.apple.product-type.application.watchapp2";
+		};
 		9A3A273A2F3463230077A48E /* timer */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 9A3A27462F34632A0077A48E /* Build configuration list for PBXNativeTarget "timer" */;
@@ -104,22 +238,39 @@
 				9A3A27382F3463230077A48E /* Frameworks */,
 				9A3A27392F3463230077A48E /* Resources */,
 				D4FB5D5E8DC948159912B9F3 /* CopyFiles */,
+				050ADEBEE98E28585F3C47E3 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				81F2C435F60B4ECF938F129D /* PBXTargetDependency */,
+				97D4FD37CFAB256ED19FFBDF /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				948F0CDD9BD1488F85D73F38 /* Shared */,
 				9A3A273D2F3463230077A48E /* timer */,
 			);
 			name = timer;
-			packageProductDependencies = (
-			);
 			productName = timer;
 			productReference = 9A3A273B2F3463230077A48E /* timer.app */;
 			productType = "com.apple.product-type.application";
+		};
+		CF1179050BF60AA617AE13B3 /* timerWatchExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3BDFCA87FF76241B1E43AB22 /* Build configuration list for PBXNativeTarget "timerWatchExtension" */;
+			buildPhases = (
+				D5A63F4F9034B5E0B5BBC741 /* Sources */,
+				60020B05D1E429C97C6DD181 /* Frameworks */,
+				8A25C137C7FC1E7846E0A6FC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = timerWatchExtension;
+			productName = timerWatchExtension;
+			productReference = 5B4C56493E454EFEB69CC910 /* timerWatchExtension.appex */;
+			productType = "com.apple.product-type.watchkit2-extension";
 		};
 		D6A69947D8F14558B92F6A9B /* HIITWidgetExtension */ = {
 			isa = PBXNativeTarget;
@@ -138,8 +289,6 @@
 				C590367A2D0D47148095B379 /* HIITWidgetExtension */,
 			);
 			name = HIITWidgetExtension;
-			packageProductDependencies = (
-			);
 			productName = HIITWidgetExtension;
 			productReference = B6CD284154D248AE9C0CE595 /* HIITWidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -178,12 +327,29 @@
 			targets = (
 				9A3A273A2F3463230077A48E /* timer */,
 				D6A69947D8F14558B92F6A9B /* HIITWidgetExtension */,
+				56309F7E46B8F260060AEE7D /* timerWatch */,
+				CF1179050BF60AA617AE13B3 /* timerWatchExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		2F2C3516834F45639657D6A2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7D2F997365E851D48C10487C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3C3A2F838FACA4DA925B9774 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8A25C137C7FC1E7846E0A6FC /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -214,6 +380,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B2914D2C4B6C8D32AA023207 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D5A63F4F9034B5E0B5BBC741 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				78B92A0CF4FC4E4BA98FAFE2 /* TimerWatchApp.swift in Sources */,
+				8B679F1E3531AEF4E05D46A4 /* ExtensionDelegate.swift in Sources */,
+				577DBA86B59599FE67A4D978 /* WatchContentView.swift in Sources */,
+				5E6532B963C7F962A3A23D40 /* WatchWorkoutManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -222,9 +406,44 @@
 			target = D6A69947D8F14558B92F6A9B /* HIITWidgetExtension */;
 			targetProxy = 8EC9720A1C384EDD827DE50A /* PBXContainerItemProxy */;
 		};
+		97D4FD37CFAB256ED19FFBDF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = timerWatch;
+			target = 56309F7E46B8F260060AEE7D /* timerWatch */;
+			targetProxy = EEF9D99DDAEB62FC9668A0EF /* PBXContainerItemProxy */;
+		};
+		E8EE1986EC0591AF4CB2FA7C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = timerWatchExtension;
+			target = CF1179050BF60AA617AE13B3 /* timerWatchExtension */;
+			targetProxy = 4560E75C5862E1162E66CC6C /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		3F6CB851B03B30965018C071 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = M6L5TLN44L;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = timerWatch/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chogm.timer.watchapp;
+				PRODUCT_NAME = timerWatch;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
 		745640D8540C49D299BC2BF1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -453,6 +672,77 @@
 			};
 			name = Release;
 		};
+		9C6EA683076DA11741F444A4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = M6L5TLN44L;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = timerWatch/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chogm.timer.watchapp;
+				PRODUCT_NAME = timerWatch;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		C8DF19DCA07B505EA54BFC17 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = timerWatchExtension/TimerWatchExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = M6L5TLN44L;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = timerWatchExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chogm.timer.watchapp.extension;
+				PRODUCT_NAME = timerWatchExtension;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		E65EC6E01988AEE971BEABDF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = timerWatchExtension/TimerWatchExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = M6L5TLN44L;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = timerWatchExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chogm.timer.watchapp.extension;
+				PRODUCT_NAME = timerWatchExtension;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
 		FB5AEFB633F848A69F28F7DD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -482,6 +772,24 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		3BDFCA87FF76241B1E43AB22 /* Build configuration list for PBXNativeTarget "timerWatchExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C8DF19DCA07B505EA54BFC17 /* Release */,
+				E65EC6E01988AEE971BEABDF /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		83161ECDDEB7D76ADE91C66F /* Build configuration list for PBXNativeTarget "timerWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9C6EA683076DA11741F444A4 /* Release */,
+				3F6CB851B03B30965018C071 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		9A3A27362F3463230077A48E /* Build configuration list for PBXProject "timer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

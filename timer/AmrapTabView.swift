@@ -3,6 +3,7 @@ import UserNotifications
 
 struct AmrapTabView: View {
     @Binding var isModePickerVisible: Bool
+    @EnvironmentObject private var heartRateManager: HeartRateManager
 
     @State private var totalMinutes: Int = 5
     @State private var countdown: Int? = nil
@@ -17,6 +18,10 @@ struct AmrapTabView: View {
 
     private var exercises: [String] {
         TimerUtilities.parseExercises(exerciseInput)
+    }
+
+    private var exerciseSummary: String {
+        exercises.isEmpty ? "운동 목록 없음" : exercises.joined(separator: " / ")
     }
 
     var body: some View {
@@ -37,12 +42,13 @@ struct AmrapTabView: View {
             TapGesture(count: 2).onEnded {
                 if isRunning {
                     rounds += 1
+                    sendRunningState()
                 }
             }
         )
         .onAppear(perform: updateModePickerVisibility)
-        .onChange(of: isRunning) { _ in updateModePickerVisibility() }
-        .onChange(of: countdown) { _ in updateModePickerVisibility() }
+        .onChange(of: isRunning, initial: false) { _, _ in updateModePickerVisibility() }
+        .onChange(of: countdown, initial: false) { _, _ in updateModePickerVisibility() }
     }
 
     private var inputView: some View {
@@ -127,6 +133,9 @@ struct AmrapTabView: View {
                 .font(.system(size: 48, weight: .bold))
                 .foregroundStyle(TimerTheme.primaryText)
                 .shadow(color: Color.black.opacity(0.25), radius: 3, x: 0, y: 2)
+            if let bpm = heartRateManager.currentBpm {
+                HeartRateMetricView(title: "현재 심박", bpm: bpm)
+            }
             Text("더블탭: 라운드 +1")
                 .font(.footnote)
                 .foregroundStyle(TimerTheme.secondaryText)
@@ -146,6 +155,9 @@ struct AmrapTabView: View {
             Text("완료 라운드 \(rounds)")
                 .font(.headline)
                 .foregroundStyle(TimerTheme.secondaryText)
+            if let average = heartRateManager.averageBpm {
+                HeartRateMetricView(title: "평균 심박", bpm: average)
+            }
             Button("다시 시작") {
                 resetAll()
             }
@@ -167,10 +179,12 @@ struct AmrapTabView: View {
     private func startCountdownTimer(then startAction: @escaping () -> Void) {
         countdown = 5
         isRunning = false
+        sendCountdownState()
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
             if let cd = countdown, cd > 1 {
                 countdown = cd - 1
+                sendCountdownState()
             } else {
                 timer?.invalidate()
                 startAction()
@@ -183,21 +197,26 @@ struct AmrapTabView: View {
         isRunning = true
         countdown = 0
         rounds = 0
+        heartRateManager.start()
         if endAlertEnabled {
             scheduleEndNotification(total: total)
         } else {
             UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
         }
         TimerUtilities.playBeep()
+        sendRunningState()
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
             if remainingSeconds > 0 {
                 remainingSeconds -= 1
+                sendRunningState()
             } else {
                 timer?.invalidate()
                 isRunning = false
+                heartRateManager.stop()
                 if endAlertEnabled {
                     TimerUtilities.playBeep()
                 }
+                sendCompleteState()
             }
         }
     }
@@ -207,7 +226,9 @@ struct AmrapTabView: View {
         isRunning = false
         countdown = nil
         rounds = 0
+        heartRateManager.stop()
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        sendIdleState()
     }
 
     private func resetAll() {
@@ -216,7 +237,50 @@ struct AmrapTabView: View {
         timer?.invalidate()
         remainingSeconds = 0
         rounds = 0
+        heartRateManager.reset()
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        sendIdleState()
+    }
+
+    private func sendCountdownState() {
+        guard let cd = countdown else { return }
+        heartRateManager.sendTimerState(
+            mode: TimerSyncMode.amrap,
+            phase: TimerSyncPhase.countdown,
+            displaySeconds: cd,
+            headline: "카운트다운",
+            exercise: nil
+        )
+    }
+
+    private func sendRunningState() {
+        heartRateManager.sendTimerState(
+            mode: TimerSyncMode.amrap,
+            phase: TimerSyncPhase.running,
+            displaySeconds: remainingSeconds,
+            headline: "라운드 \(rounds)",
+            exercise: exerciseSummary
+        )
+    }
+
+    private func sendCompleteState() {
+        heartRateManager.sendTimerState(
+            mode: TimerSyncMode.amrap,
+            phase: TimerSyncPhase.complete,
+            displaySeconds: 0,
+            headline: "완료 라운드 \(rounds)",
+            exercise: nil
+        )
+    }
+
+    private func sendIdleState() {
+        heartRateManager.sendTimerState(
+            mode: TimerSyncMode.amrap,
+            phase: TimerSyncPhase.idle,
+            displaySeconds: 0,
+            headline: "",
+            exercise: nil
+        )
     }
 
     private func scheduleEndNotification(total: Int) {
