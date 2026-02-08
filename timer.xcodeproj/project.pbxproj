@@ -100,14 +100,19 @@
 			path = Shared;
 			sourceTree = "<group>";
 		};
-		9A3A273D2F3463230077A48E /* timer */ = {
+		9A3A273D2F3463230077A48E /* App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = timer;
+			path = App;
 			sourceTree = "<group>";
 		};
-		C590367A2D0D47148095B379 /* HIITWidgetExtension */ = {
+		9A5DE5DF2F377B93002E0302 /* TabView */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = HIITWidgetExtension;
+			path = TabView;
+			sourceTree = "<group>";
+		};
+		C590367A2D0D47148095B379 /* WidgetExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = WidgetExtension;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -157,13 +162,13 @@
 		9A3A27322F3463230077A48E = {
 			isa = PBXGroup;
 			children = (
-				9A3A273D2F3463230077A48E /* timer */,
+				9A3A273D2F3463230077A48E /* App */,
 				948F0CDD9BD1488F85D73F38 /* Shared */,
-				C590367A2D0D47148095B379 /* HIITWidgetExtension */,
+				C590367A2D0D47148095B379 /* WidgetExtension */,
 				9A3A273C2F3463230077A48E /* Products */,
 				1C688E05901964DA681B289D /* Frameworks */,
-				EC3612D26D7D066E92FBD558 /* timerWatch */,
-				CB3DB1B132DE8DC37622973A /* timerWatchExtension */,
+				EC3612D26D7D066E92FBD558 /* WatchApp */,
+				CB3DB1B132DE8DC37622973A /* WatchExtension */,
 			);
 			sourceTree = "<group>";
 		};
@@ -186,9 +191,10 @@
 			name = watchOS;
 			sourceTree = "<group>";
 		};
-		CB3DB1B132DE8DC37622973A /* timerWatchExtension */ = {
+		CB3DB1B132DE8DC37622973A /* WatchExtension */ = {
 			isa = PBXGroup;
 			children = (
+				9A5DE5DF2F377B93002E0302 /* TabView */,
 				6FD8F888BB7C8F6D87C78357 /* Info.plist */,
 				F31ED00E048D30A02B15C4DF /* TimerWatchExtension.entitlements */,
 				F851030D7A9990DD23B9296D /* TimerWatchApp.swift */,
@@ -196,16 +202,16 @@
 				8C8962BCD90C243CAF581B1C /* WatchContentView.swift */,
 				AC057E51E79CD13CA49C8335 /* WatchWorkoutManager.swift */,
 			);
-			path = timerWatchExtension;
+			path = WatchExtension;
 			sourceTree = "<group>";
 		};
-		EC3612D26D7D066E92FBD558 /* timerWatch */ = {
+		EC3612D26D7D066E92FBD558 /* WatchApp */ = {
 			isa = PBXGroup;
 			children = (
 				A7508226CD7F7CF8DC0EA793 /* Info.plist */,
 				98254734FACFE8AFE235012A /* Assets.xcassets */,
 			);
-			path = timerWatch;
+			path = WatchApp;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -248,7 +254,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				948F0CDD9BD1488F85D73F38 /* Shared */,
-				9A3A273D2F3463230077A48E /* timer */,
+				9A3A273D2F3463230077A48E /* App */,
 			);
 			name = timer;
 			productName = timer;
@@ -266,6 +272,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				9A5DE5DF2F377B93002E0302 /* TabView */,
 			);
 			name = timerWatchExtension;
 			productName = timerWatchExtension;
@@ -286,7 +295,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				948F0CDD9BD1488F85D73F38 /* Shared */,
-				C590367A2D0D47148095B379 /* HIITWidgetExtension */,
+				C590367A2D0D47148095B379 /* WidgetExtension */,
 			);
 			name = HIITWidgetExtension;
 			productName = HIITWidgetExtension;
@@ -430,7 +439,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = M6L5TLN44L;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = timerWatch/Info.plist;
+				INFOPLIST_FILE = WatchApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.chogm.timer.watchapp;
@@ -589,6 +598,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = App/Timer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = M6L5TLN44L;
@@ -596,6 +606,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "We need access to heart rate data to display workout stats.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -633,6 +644,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = App/Timer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = M6L5TLN44L;
@@ -640,6 +652,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "We need access to heart rate data to display workout stats.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -681,7 +694,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = M6L5TLN44L;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = timerWatch/Info.plist;
+				INFOPLIST_FILE = WatchApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.chogm.timer.watchapp;
@@ -700,12 +713,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				CODE_SIGN_ENTITLEMENTS = timerWatchExtension/TimerWatchExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = WatchExtension/TimerWatchExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = M6L5TLN44L;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = timerWatchExtension/Info.plist;
+				INFOPLIST_FILE = WatchExtension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.chogm.timer.watchapp.extension;
@@ -724,12 +737,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
-				CODE_SIGN_ENTITLEMENTS = timerWatchExtension/TimerWatchExtension.entitlements;
+				CODE_SIGN_ENTITLEMENTS = WatchExtension/TimerWatchExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = M6L5TLN44L;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = timerWatchExtension/Info.plist;
+				INFOPLIST_FILE = WatchExtension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.chogm.timer.watchapp.extension;

@@ -40,7 +40,9 @@ struct ContentView: View {
                 ForTimeTabView(isModePickerVisible: $isModePickerVisible)
                     .tag(WorkoutMode.forTime)
             }
+#if os(iOS)
             .tabViewStyle(.page(indexDisplayMode: .never))
+#endif
 
             settingsButton
         }

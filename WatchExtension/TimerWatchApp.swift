@@ -2,7 +2,8 @@ import SwiftUI
 
 @main
 struct TimerWatchApp: App {
-    @StateObject private var workoutManager = WatchWorkoutManager()
+    @WKApplicationDelegateAdaptor(ExtensionDelegate.self) private var extensionDelegate
+    @StateObject private var workoutManager = WatchWorkoutManager.shared
 
     var body: some Scene {
         WindowGroup {
