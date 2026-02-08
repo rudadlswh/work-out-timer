@@ -42,17 +42,18 @@ flowchart TD
 ```
 
 ## 프로젝트 구조
-- `timer/ContentView.swift`: 앱 쉘 + 탭 전환
-- `timer/EmomTabView.swift`: EMOM UI + 타이머 로직
-- `timer/AmrapTabView.swift`: AMRAP UI + 타이머 로직
-- `timer/ForTimeTabView.swift`: FOR TIME UI + 타이머 로직
-- `timer/SettingsView.swift`: 워치 연동 상태/핑/심박 확인 설정 화면
-- `timer/HeartRateManager.swift`: 워치 연결 + 심박/타이머 동기화 처리
-- `timer/TimerTheme.swift`: 공통 컬러
-- `timer/TimerUtilities.swift`: 공통 유틸
-- `HIITWidgetExtension/`: WidgetKit 확장
+- `App/ContentView.swift`: 앱 쉘 + 탭 전환
+- `App/EmomTabView.swift`: EMOM UI + 타이머 로직
+- `App/AmrapTabView.swift`: AMRAP UI + 타이머 로직
+- `App/ForTimeTabView.swift`: FOR TIME UI + 타이머 로직
+- `App/SettingsView.swift`: 워치 연동 상태/핑/심박 확인 설정 화면
+- `App/HeartRateManager.swift`: 워치 연결 + 심박/타이머 동기화 처리
+- `App/TimerTheme.swift`: 공통 컬러
+- `App/TimerUtilities.swift`: 공통 유틸
+- `WidgetExtension/`: WidgetKit 확장
 - `Shared/HIITActivity.swift`: Live Activity 속성
-- `timerWatchExtension/`: 워치 앱(타이머 UI + 심박 수집)
+- `WatchApp/`: 워치 앱 리소스(아이콘/Info.plist)
+- `WatchExtension/`: 워치 앱(타이머 UI + 심박 수집)
 
 ## 빌드/실행
 1. Xcode에서 `timer.xcodeproj` 열기

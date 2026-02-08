@@ -12,6 +12,8 @@ struct PhoneTimerState: Equatable {
 }
 
 final class WatchWorkoutManager: NSObject, ObservableObject {
+    static let shared = WatchWorkoutManager()
+
     @Published var currentBpm: Int?
     @Published var averageBpm: Int?
     @Published var isRunning: Bool = false
@@ -24,6 +26,9 @@ final class WatchWorkoutManager: NSObject, ObservableObject {
     private var authorizationStatus: Bool?
     private var sumBpm: Double = 0
     private var sampleCount: Int = 0
+    private var isStoppingWorkout: Bool = false
+    private var hasDiscardedWorkout: Bool = false
+    private var hasBegunCollection: Bool = false
 
     override init() {
         super.init()
@@ -45,13 +50,14 @@ final class WatchWorkoutManager: NSObject, ObservableObject {
             completion(false)
             return
         }
+        let workoutType = HKObjectType.workoutType()
 
         if let status = authorizationStatus {
             completion(status)
             return
         }
 
-        healthStore.requestAuthorization(toShare: [], read: [heartRateType]) { success, _ in
+        healthStore.requestAuthorization(toShare: [workoutType], read: [heartRateType]) { success, _ in
             DispatchQueue.main.async {
                 self.authorizationStatus = success
                 completion(success)
@@ -59,20 +65,29 @@ final class WatchWorkoutManager: NSObject, ObservableObject {
         }
     }
 
-    func startWorkout() {
+    func startWorkout(configuration: HKWorkoutConfiguration? = nil) {
         requestAuthorizationIfNeeded { [weak self] success in
             guard let self, success else { return }
-            guard self.workoutSession == nil else { return }
+            if self.isRunning { return }
+            if self.workoutSession != nil || self.workoutBuilder != nil {
+                self.cleanupWorkout(clearStopFlag: true)
+            }
 
             self.resetMetrics()
-            let configuration = HKWorkoutConfiguration()
-            configuration.activityType = .other
-            configuration.locationType = .indoor
+            self.hasDiscardedWorkout = false
+            self.isStoppingWorkout = false
+            self.hasBegunCollection = false
+            let workoutConfiguration = configuration ?? {
+                let configuration = HKWorkoutConfiguration()
+                configuration.activityType = .other
+                configuration.locationType = .indoor
+                return configuration
+            }()
 
             do {
-                let session = try HKWorkoutSession(healthStore: self.healthStore, configuration: configuration)
+                let session = try HKWorkoutSession(healthStore: self.healthStore, configuration: workoutConfiguration)
                 let builder = session.associatedWorkoutBuilder()
-                builder.dataSource = HKLiveWorkoutDataSource(healthStore: self.healthStore, workoutConfiguration: configuration)
+                builder.dataSource = HKLiveWorkoutDataSource(healthStore: self.healthStore, workoutConfiguration: workoutConfiguration)
                 session.delegate = self
                 builder.delegate = self
 
@@ -82,7 +97,14 @@ final class WatchWorkoutManager: NSObject, ObservableObject {
 
                 let startDate = Date()
                 session.startActivity(with: startDate)
-                builder.beginCollection(withStart: startDate) { _, _ in }
+                builder.beginCollection(withStart: startDate) { [weak self] success, _ in
+                    DispatchQueue.main.async {
+                        self?.hasBegunCollection = success
+                        if success {
+                            self?.startMirroringIfNeeded(for: session)
+                        }
+                    }
+                }
             } catch {
                 self.isRunning = false
             }
@@ -91,14 +113,26 @@ final class WatchWorkoutManager: NSObject, ObservableObject {
 
     func stopWorkout() {
         guard let session = workoutSession, let builder = workoutBuilder else { return }
+        guard !isStoppingWorkout else { return }
+        isStoppingWorkout = true
         session.end()
         let endDate = Date()
-        builder.endCollection(withEnd: endDate) { _, _ in
-            builder.discardWorkout()
+        let finish: () -> Void = { [weak self] in
+            guard let self else { return }
+            if self.hasBegunCollection && !self.hasDiscardedWorkout {
+                self.hasDiscardedWorkout = true
+                builder.discardWorkout()
+            }
+            self.cleanupWorkout(clearStopFlag: true)
         }
-        workoutSession = nil
-        workoutBuilder = nil
-        isRunning = false
+
+        if hasBegunCollection {
+            builder.endCollection(withEnd: endDate) { _, _ in
+                finish()
+            }
+        } else {
+            finish()
+        }
     }
 
     private func resetMetrics() {
@@ -106,6 +140,16 @@ final class WatchWorkoutManager: NSObject, ObservableObject {
         averageBpm = nil
         sumBpm = 0
         sampleCount = 0
+    }
+
+    private func cleanupWorkout(clearStopFlag: Bool) {
+        workoutSession = nil
+        workoutBuilder = nil
+        isRunning = false
+        hasBegunCollection = false
+        if clearStopFlag {
+            isStoppingWorkout = false
+        }
     }
 
     private func updateHeartRate(_ bpm: Double) {
@@ -126,6 +170,25 @@ final class WatchWorkoutManager: NSObject, ObservableObject {
             session.transferUserInfo(payload)
         }
     }
+
+    private func sendPong(pingId: String?) {
+        guard let session = wcSession else { return }
+        var payload: [String: Any] = ["pong": true]
+        if let pingId {
+            payload["pingId"] = pingId
+        }
+        if session.isReachable {
+            session.sendMessage(payload, replyHandler: nil, errorHandler: nil)
+        } else {
+            session.transferUserInfo(payload)
+        }
+    }
+
+    private func startMirroringIfNeeded(for session: HKWorkoutSession) {
+        if #available(watchOS 10.0, *) {
+            session.startMirroringToCompanionDevice { _, _ in }
+        }
+    }
 }
 
 extension WatchWorkoutManager: HKWorkoutSessionDelegate {
@@ -133,6 +196,9 @@ extension WatchWorkoutManager: HKWorkoutSessionDelegate {
         if toState == .ended {
             DispatchQueue.main.async {
                 self.isRunning = false
+                if !self.isStoppingWorkout {
+                    self.cleanupWorkout(clearStopFlag: true)
+                }
             }
         }
     }
@@ -140,6 +206,9 @@ extension WatchWorkoutManager: HKWorkoutSessionDelegate {
     func workoutSession(_ workoutSession: HKWorkoutSession, didFailWithError error: Error) {
         DispatchQueue.main.async {
             self.isRunning = false
+            if !self.isStoppingWorkout {
+                self.cleanupWorkout(clearStopFlag: true)
+            }
         }
     }
 }
@@ -172,7 +241,11 @@ extension WatchWorkoutManager: WCSessionDelegate {
 
     func session(_ session: WCSession, didReceiveMessage message: [String : Any], replyHandler: @escaping ([String : Any]) -> Void) {
         if let command = message["command"] as? String, command == "ping" {
-            replyHandler(["pong": true])
+            var reply: [String: Any] = ["pong": true]
+            if let pingId = message["pingId"] as? String {
+                reply["pingId"] = pingId
+            }
+            replyHandler(reply)
             return
         }
         handleMessage(message)
@@ -194,6 +267,10 @@ extension WatchWorkoutManager: WCSessionDelegate {
         }
 
         guard let command = message["command"] as? String else { return }
+        if command == "ping" {
+            sendPong(pingId: message["pingId"] as? String)
+            return
+        }
         DispatchQueue.main.async {
             if command == "start" {
                 self.startWorkout()
