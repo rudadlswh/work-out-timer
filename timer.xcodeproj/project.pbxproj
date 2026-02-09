@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		24B93257ABF0C5795A4E6071 /* timerWatchExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 5B4C56493E454EFEB69CC910 /* timerWatchExtension.appex */; };
-		2B5A47B34DA84243A5C7E773 /* HIITWidgetExtension.appex in CopyFiles */ = {isa = PBXBuildFile; fileRef = B6CD284154D248AE9C0CE595 /* HIITWidgetExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2B5A47B34DA84243A5C7E773 /* HIITWidgetExtension.appex in Copy Files */ = {isa = PBXBuildFile; fileRef = B6CD284154D248AE9C0CE595 /* HIITWidgetExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3C3A2F838FACA4DA925B9774 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 98254734FACFE8AFE235012A /* Assets.xcassets */; };
 		577DBA86B59599FE67A4D978 /* WatchContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C8962BCD90C243CAF581B1C /* WatchContentView.swift */; };
 		5DA500165BF9575698C75DA2 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 320027EF24D94A208BE481DC /* Foundation.framework */; };
@@ -66,36 +66,18 @@
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D4FB5D5E8DC948159912B9F3 /* CopyFiles */ = {
+		D4FB5D5E8DC948159912B9F3 /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				2B5A47B34DA84243A5C7E773 /* HIITWidgetExtension.appex in CopyFiles */,
+				2B5A47B34DA84243A5C7E773 /* HIITWidgetExtension.appex in Copy Files */,
 			);
+			name = "Copy Files";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		DDC15D5EDEE047B5AC8459CD /* Copy Watch App Into iOS Bundle */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(BUILT_PRODUCTS_DIR)/Watch/timerWatch.app",
-			);
-			outputPaths = (
-				"$(TARGET_BUILD_DIR)/$(WRAPPER_NAME)/Watch",
-				"$(TARGET_BUILD_DIR)/$(WRAPPER_NAME)/Watch/timerWatch.app",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if [ -d \"${BUILT_PRODUCTS_DIR}/Watch/timerWatch.app\" ]; then\n  mkdir -p \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/Watch\"\n  ditto \"${BUILT_PRODUCTS_DIR}/Watch/timerWatch.app\" \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/Watch/timerWatch.app\"\nfi\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXFileReference section */
 		320027EF24D94A208BE481DC /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS11.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
@@ -262,9 +244,9 @@
 				9A3A27372F3463230077A48E /* Sources */,
 				9A3A27382F3463230077A48E /* Frameworks */,
 				9A3A27392F3463230077A48E /* Resources */,
-				D4FB5D5E8DC948159912B9F3 /* CopyFiles */,
+				D4FB5D5E8DC948159912B9F3 /* Copy Files */,
 				050ADEBEE98E28585F3C47E3 /* Embed Watch Content */,
-				DDC15D5EDEE047B5AC8459CD /* Copy Watch App Into iOS Bundle */,
+				DDC15D5EDEE047B5AC8459CD /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -393,6 +375,25 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		DDC15D5EDEE047B5AC8459CD /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/Watch/timerWatch.app",
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(WRAPPER_NAME)/Watch",
+				"$(TARGET_BUILD_DIR)/$(WRAPPER_NAME)/Watch/timerWatch.app",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ -d \"${BUILT_PRODUCTS_DIR}/Watch/timerWatch.app\" ]; then\n  mkdir -p \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/Watch\"\n  ditto \"${BUILT_PRODUCTS_DIR}/Watch/timerWatch.app\" \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/Watch/timerWatch.app\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		634225B76FAC4AB78D082C20 /* Sources */ = {

@@ -4,7 +4,7 @@ struct WatchForTimeView: View {
     @EnvironmentObject private var workoutManager: WatchWorkoutManager
     @Binding var isTabLocked: Bool
 
-    @State private var totalMinutes: Int = 5
+    @State private var totalMinutes: Int = 30
     @State private var countdown: Int? = nil
     @State private var elapsedSeconds: Int = 0
     @State private var timer: Timer? = nil

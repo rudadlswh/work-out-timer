@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject private var heartRateManager: HeartRateManager
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("shouldShowOnboarding") private var shouldShowOnboarding: Bool = false
 
     private var isLinked: Bool {
         heartRateManager.isSessionSupported
@@ -63,6 +64,7 @@ struct SettingsView: View {
                     statusCard
                     heartRateCard
                     helpCard
+                    onboardingCard
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 24)
@@ -139,6 +141,31 @@ struct SettingsView: View {
         }
         .font(.subheadline)
         .foregroundStyle(TimerTheme.secondaryText)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(Color.black.opacity(0.22))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+        )
+    }
+
+    private var onboardingCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("기능 안내")
+                .font(.headline)
+                .foregroundStyle(TimerTheme.primaryText)
+            Text("처음 보여지는 기능 안내를 다시 볼 수 있습니다.")
+                .font(.subheadline)
+                .foregroundStyle(TimerTheme.secondaryText)
+            Button("기능 안내 다시 보기") {
+                shouldShowOnboarding = true
+                dismiss()
+            }
+            .buttonStyle(.bordered)
+            .tint(TimerTheme.actionTint)
+        }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background(Color.black.opacity(0.22))

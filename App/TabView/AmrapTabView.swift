@@ -8,7 +8,7 @@ struct AmrapTabView: View {
     @Binding var isModePickerVisible: Bool
     @EnvironmentObject private var heartRateManager: HeartRateManager
 
-    @State private var totalMinutes: Int = 5
+    @State private var totalMinutes: Int = 20
     @State private var countdown: Int? = nil
     @State private var remainingSeconds: Int = 0
     @State private var timer: Timer? = nil
@@ -218,7 +218,6 @@ struct AmrapTabView: View {
             if remainingSeconds > 0 {
                 remainingSeconds -= 1
                 sendRunningState()
-                updateLiveActivity()
             } else {
                 timer?.invalidate()
                 isRunning = false

@@ -13,6 +13,10 @@ struct ContentView: View {
     @State private var workoutMode: WorkoutMode = .emom
     @State private var isModePickerVisible: Bool = true
     @State private var isSettingsPresented: Bool = false
+    @State private var showOnboarding: Bool = false
+
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
+    @AppStorage("shouldShowOnboarding") private var shouldShowOnboarding: Bool = false
 
     @Environment(\.scenePhase) private var scenePhase
 
@@ -54,11 +58,24 @@ struct ContentView: View {
                 // 옵션: 알림 예약 유지 또는 정리
             }
         }
+        .onAppear {
+            if !hasSeenOnboarding || shouldShowOnboarding {
+                showOnboarding = true
+                shouldShowOnboarding = false
+            }
+        }
         .sheet(isPresented: $isSettingsPresented) {
             NavigationStack {
                 SettingsView()
             }
             .tint(TimerTheme.actionTint)
+        }
+        .fullScreenCover(isPresented: $showOnboarding) {
+            OnboardingView {
+                hasSeenOnboarding = true
+                showOnboarding = false
+            }
+            .interactiveDismissDisabled()
         }
     }
 
@@ -95,11 +112,15 @@ private struct TabSwipeLockModifier: ViewModifier {
     let isLocked: Bool
 
     func body(content: Content) -> some View {
-        let minimumDistance: CGFloat = isLocked ? 10 : .greatestFiniteMagnitude
-        return content.highPriorityGesture(
-            DragGesture(minimumDistance: minimumDistance).onChanged { _ in },
-            including: .gesture
-        )
+        if #available(iOS 16.0, *) {
+            return content.scrollDisabled(isLocked)
+        } else {
+            let minimumDistance: CGFloat = isLocked ? 10 : .greatestFiniteMagnitude
+            return content.highPriorityGesture(
+                DragGesture(minimumDistance: minimumDistance).onChanged { _ in },
+                including: .gesture
+            )
+        }
     }
 }
 

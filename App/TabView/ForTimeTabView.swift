@@ -7,7 +7,7 @@ struct ForTimeTabView: View {
     @Binding var isModePickerVisible: Bool
     @EnvironmentObject private var heartRateManager: HeartRateManager
 
-    @State private var totalMinutes: Int = 5
+    @State private var totalMinutes: Int = 30
     @State private var countdown: Int? = nil
     @State private var elapsedSeconds: Int = 0
     @State private var timer: Timer? = nil
@@ -196,7 +196,6 @@ struct ForTimeTabView: View {
             } else {
                 elapsedSeconds += 1
                 sendRunningState()
-                updateLiveActivity()
             }
         }
     }

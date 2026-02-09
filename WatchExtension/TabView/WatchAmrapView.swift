@@ -4,7 +4,7 @@ struct WatchAmrapView: View {
     @EnvironmentObject private var workoutManager: WatchWorkoutManager
     @Binding var isTabLocked: Bool
 
-    @State private var totalMinutes: Int = 5
+    @State private var totalMinutes: Int = 20
     @State private var countdown: Int? = nil
     @State private var remainingSeconds: Int = 0
     @State private var timer: Timer? = nil
@@ -44,7 +44,7 @@ struct WatchAmrapView: View {
         }
         .scrollDisabled(isRunning)
         .contentShape(Rectangle())
-        .highPriorityGesture(
+        .simultaneousGesture(
             TapGesture(count: 2).onEnded {
                 if isRunning {
                     rounds += 1

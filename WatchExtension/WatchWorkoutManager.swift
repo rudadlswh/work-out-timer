@@ -390,7 +390,7 @@ extension WatchWorkoutManager: WCSessionDelegate {
                 updatedAt: Date()
             )
 
-            let shouldRun = phase == "running" || phase == "countdown"
+            let shouldRun = phase == "running"
             if shouldRun, !self.isRunning {
                 self.startWorkout()
             } else if !shouldRun, self.isRunning {

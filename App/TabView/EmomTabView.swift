@@ -9,7 +9,7 @@ struct EmomTabView: View {
     @EnvironmentObject private var heartRateManager: HeartRateManager
 
     @State private var intervalMinutes: Int = 1
-    @State private var totalMinutes: Int = 5
+    @State private var totalMinutes: Int = 15
     @State private var countdown: Int? = nil
     @State private var remainingSeconds: Int = 0
     @State private var nextBeep: Int = 0
@@ -210,8 +210,8 @@ struct EmomTabView: View {
                 if nextBeep == 0 {
                     TimerUtilities.playBeep()
                     nextBeep = interval * 60
+                    updateLiveActivity()
                 }
-                updateLiveActivity()
                 sendRunningState()
             } else {
                 timer?.invalidate()
