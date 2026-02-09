@@ -18,6 +18,7 @@ final class WatchWorkoutManager: NSObject, ObservableObject {
     @Published var averageBpm: Int?
     @Published var isRunning: Bool = false
     @Published var phoneTimerState: PhoneTimerState?
+    @Published var useDummyHeartRate: Bool = WatchWorkoutManager.defaultDummyHeartRateEnabled
 
     private let healthStore = HKHealthStore()
     private var workoutSession: HKWorkoutSession?
@@ -29,6 +30,18 @@ final class WatchWorkoutManager: NSObject, ObservableObject {
     private var isStoppingWorkout: Bool = false
     private var hasDiscardedWorkout: Bool = false
     private var hasBegunCollection: Bool = false
+    private var hasRequestedMirroring: Bool = false
+    private var dummyTimer: Timer?
+    private var dummyBpm: Int = 95
+    private var dummyDirection: Int = 1
+
+    private static let defaultDummyHeartRateEnabled: Bool = {
+    #if targetEnvironment(simulator)
+        return true
+    #else
+        return false
+    #endif
+    }()
 
     override init() {
         super.init()
@@ -41,6 +54,13 @@ final class WatchWorkoutManager: NSObject, ObservableObject {
         session.delegate = self
         session.activate()
         wcSession = session
+    }
+
+    private func ensureSessionActivated() {
+        guard let session = wcSession else { return }
+        if session.activationState != .activated {
+            session.activate()
+        }
     }
 
     private func requestAuthorizationIfNeeded(completion: @escaping (Bool) -> Void) {
@@ -66,6 +86,10 @@ final class WatchWorkoutManager: NSObject, ObservableObject {
     }
 
     func startWorkout(configuration: HKWorkoutConfiguration? = nil) {
+        if useDummyHeartRate {
+            startDummyWorkout()
+            return
+        }
         requestAuthorizationIfNeeded { [weak self] success in
             guard let self, success else { return }
             if self.isRunning { return }
@@ -77,6 +101,7 @@ final class WatchWorkoutManager: NSObject, ObservableObject {
             self.hasDiscardedWorkout = false
             self.isStoppingWorkout = false
             self.hasBegunCollection = false
+            self.hasRequestedMirroring = false
             let workoutConfiguration = configuration ?? {
                 let configuration = HKWorkoutConfiguration()
                 configuration.activityType = .other
@@ -101,7 +126,7 @@ final class WatchWorkoutManager: NSObject, ObservableObject {
                     DispatchQueue.main.async {
                         self?.hasBegunCollection = success
                         if success {
-                            self?.startMirroringIfNeeded(for: session)
+                            self?.requestMirroringIfPossible(for: session)
                         }
                     }
                 }
@@ -112,6 +137,10 @@ final class WatchWorkoutManager: NSObject, ObservableObject {
     }
 
     func stopWorkout() {
+        if useDummyHeartRate {
+            stopDummyWorkout()
+            return
+        }
         guard let session = workoutSession, let builder = workoutBuilder else { return }
         guard !isStoppingWorkout else { return }
         isStoppingWorkout = true
@@ -147,6 +176,8 @@ final class WatchWorkoutManager: NSObject, ObservableObject {
         workoutBuilder = nil
         isRunning = false
         hasBegunCollection = false
+        hasRequestedMirroring = false
+        stopDummyHeartRate()
         if clearStopFlag {
             isStoppingWorkout = false
         }
@@ -161,8 +192,52 @@ final class WatchWorkoutManager: NSObject, ObservableObject {
         sendHeartRate(bpm)
     }
 
+    private func startDummyWorkout() {
+        if isRunning { return }
+        resetMetrics()
+        isRunning = true
+        startDummyHeartRate()
+    }
+
+    private func stopDummyWorkout() {
+        if !isRunning { return }
+        stopDummyHeartRate()
+        cleanupWorkout(clearStopFlag: true)
+    }
+
+    private func startDummyHeartRate() {
+        stopDummyHeartRate()
+        let timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            guard let self, self.isRunning else { return }
+            let bpm = self.nextDummyHeartRate()
+            self.updateHeartRate(Double(bpm))
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        dummyTimer = timer
+    }
+
+    private func stopDummyHeartRate() {
+        dummyTimer?.invalidate()
+        dummyTimer = nil
+    }
+
+    private func nextDummyHeartRate() -> Int {
+        let drift = Int.random(in: -2...4)
+        dummyBpm += drift * dummyDirection
+        if dummyBpm > 145 {
+            dummyBpm = 145
+            dummyDirection = -1
+        } else if dummyBpm < 75 {
+            dummyBpm = 75
+            dummyDirection = 1
+        }
+        return dummyBpm
+    }
+
     private func sendHeartRate(_ bpm: Double) {
         guard let session = wcSession else { return }
+        ensureSessionActivated()
+        guard session.activationState == .activated else { return }
         let payload = ["heartRate": bpm]
         if session.isReachable {
             session.sendMessage(payload, replyHandler: nil, errorHandler: nil)
@@ -173,6 +248,8 @@ final class WatchWorkoutManager: NSObject, ObservableObject {
 
     private func sendPong(pingId: String?) {
         guard let session = wcSession else { return }
+        ensureSessionActivated()
+        guard session.activationState == .activated else { return }
         var payload: [String: Any] = ["pong": true]
         if let pingId {
             payload["pingId"] = pingId
@@ -184,15 +261,23 @@ final class WatchWorkoutManager: NSObject, ObservableObject {
         }
     }
 
-    private func startMirroringIfNeeded(for session: HKWorkoutSession) {
-        if #available(watchOS 10.0, *) {
-            session.startMirroringToCompanionDevice { _, _ in }
-        }
+    private func requestMirroringIfPossible(for session: HKWorkoutSession) {
+        guard #available(watchOS 10.0, *) else { return }
+        guard !hasRequestedMirroring else { return }
+        guard hasBegunCollection, isRunning else { return }
+        guard session.state == .running else { return }
+        hasRequestedMirroring = true
+        session.startMirroringToCompanionDevice { _, _ in }
     }
 }
 
 extension WatchWorkoutManager: HKWorkoutSessionDelegate {
     func workoutSession(_ workoutSession: HKWorkoutSession, didChangeTo toState: HKWorkoutSessionState, from fromState: HKWorkoutSessionState, date: Date) {
+        if toState == .running {
+            DispatchQueue.main.async {
+                self.requestMirroringIfPossible(for: workoutSession)
+            }
+        }
         if toState == .ended {
             DispatchQueue.main.async {
                 self.isRunning = false
@@ -285,20 +370,31 @@ extension WatchWorkoutManager: WCSessionDelegate {
         let phase = message["phase"] as? String ?? ""
         let displaySeconds = message["displaySeconds"] as? Int ?? 0
         let headline = message["headline"] as? String ?? ""
-        let exercise = message["exercise"] as? String ?? ""
+        let exercise = message["exercise"] as? String ?? phoneTimerState?.exercise ?? ""
 
         DispatchQueue.main.async {
             if phase == "idle" || mode.isEmpty {
                 self.phoneTimerState = nil
-            } else {
-                self.phoneTimerState = PhoneTimerState(
-                    mode: mode,
-                    phase: phase,
-                    displaySeconds: displaySeconds,
-                    headline: headline,
-                    exercise: exercise,
-                    updatedAt: Date()
-                )
+                if self.isRunning {
+                    self.stopWorkout()
+                }
+                return
+            }
+
+            self.phoneTimerState = PhoneTimerState(
+                mode: mode,
+                phase: phase,
+                displaySeconds: displaySeconds,
+                headline: headline,
+                exercise: exercise,
+                updatedAt: Date()
+            )
+
+            let shouldRun = phase == "running" || phase == "countdown"
+            if shouldRun, !self.isRunning {
+                self.startWorkout()
+            } else if !shouldRun, self.isRunning {
+                self.stopWorkout()
             }
         }
     }

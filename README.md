@@ -70,3 +70,4 @@ xcodebuild -project timer.xcodeproj -scheme timer -sdk iphonesimulator -configur
 - 알림 허용이 필요합니다(끝 알람).
 - AMRAP 라운드는 실행 화면 더블탭으로 수동 체크합니다.
 - 워치 연동은 iPhone/Watch 모두 앱이 실행 중일 때 실시간 표시가 됩니다.
+- 유료 개발자 계정이 없어 실기기(특히 Apple Watch) 설치/테스트에 제한이 있습니다. 현재는 시뮬레이터 중심으로 검증했습니다.

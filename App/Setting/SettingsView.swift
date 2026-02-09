@@ -154,6 +154,14 @@ struct SettingsView: View {
             Text("심박수 확인")
                 .font(.headline)
                 .foregroundStyle(TimerTheme.primaryText)
+            Toggle("더미 심박수 사용", isOn: Binding(
+                get: { heartRateManager.useDummyHeartRate },
+                set: { heartRateManager.setDummyHeartRateEnabled($0) }
+            ))
+            .tint(TimerTheme.actionTint)
+            Text("시뮬레이터나 연동 불가 상태에서도 심박수 UI를 확인할 수 있습니다.")
+                .font(.caption)
+                .foregroundStyle(TimerTheme.secondaryText)
             statusRow(title: "측정 상태", value: heartRateManager.isCollecting ? "측정 중" : "대기")
             statusRow(title: "현재 심박", value: heartRateManager.currentBpm.map { "\($0) bpm" } ?? "미수신")
             statusRow(title: "평균 심박", value: heartRateManager.averageBpm.map { "\($0) bpm" } ?? "미수신")

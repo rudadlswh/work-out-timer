@@ -7,36 +7,62 @@ struct PhoneTimerStatusView: View {
     let averageBpm: Int?
 
     var body: some View {
-        VStack(spacing: 4) {
-            Text("폰 연동")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-            Text(state.mode)
-                .font(.caption2.weight(.semibold))
-            Text(state.headline)
-                .font(.headline)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-            Text(WatchTimerUtilities.formatTime(state.displaySeconds))
-                .font(.title3.monospacedDigit())
-            if state.phase == "complete" {
-                if let averageBpm {
-                    WatchHeartRateView(title: "평균 심박", bpm: averageBpm)
-                }
-            } else if let bpm {
-                WatchHeartRateView(title: "현재 심박", bpm: bpm)
-            }
-            if !state.exercise.isEmpty {
-                Text(state.exercise)
+        let isComplete = state.phase == "complete"
+        let isForTime = state.mode == WatchWorkoutMode.forTime.rawValue
+
+        TimelineView(.periodic(from: .now, by: 1)) { context in
+            let displaySeconds = adjustedSeconds(at: context.date)
+            VStack(spacing: 4) {
+                Text("폰 연동")
                     .font(.caption2)
-                    .lineLimit(2)
+                    .foregroundStyle(.secondary)
+                Text(state.mode)
+                    .font(.caption2.weight(.semibold))
+                Text(state.headline)
+                    .font(.headline)
+                    .lineLimit(1)
                     .minimumScaleFactor(0.7)
+                if !isComplete || isForTime {
+                    Text(WatchTimerUtilities.formatTime(displaySeconds))
+                        .font(.title3.monospacedDigit())
+                }
+                if isComplete {
+                    if let averageBpm {
+                        WatchHeartRateView(title: "평균 심박", bpm: averageBpm)
+                    } else {
+                        Text("평균 심박 없음")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                } else if let bpm {
+                    WatchHeartRateView(title: "현재 심박", bpm: bpm)
+                }
+                if !(isComplete && state.mode == WatchWorkoutMode.amrap.rawValue) && !state.exercise.isEmpty {
+                    Text(state.exercise)
+                        .font(.caption2)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.7)
+                }
             }
+            .padding(6)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .background(Color.white.opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         }
-        .padding(6)
-        .frame(maxWidth: .infinity, alignment: .center)
-        .background(Color.white.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+    }
+
+    private func adjustedSeconds(at date: Date) -> Int {
+        let delta = Int(date.timeIntervalSince(state.updatedAt))
+        if delta <= 0 || state.phase == "complete" {
+            return state.displaySeconds
+        }
+
+        let isCountdown = state.phase == "countdown"
+            || (state.mode != WatchWorkoutMode.forTime.rawValue && state.phase == "running")
+        if isCountdown {
+            return max(0, state.displaySeconds - delta)
+        }
+        return state.displaySeconds + delta
     }
 }
 

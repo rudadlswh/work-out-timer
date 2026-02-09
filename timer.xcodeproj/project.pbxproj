@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		11F7F21D1ED3B37FEB23BBF4 /* timerWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = E59E778CACFCF5C7D4AEBD3B /* timerWatch.app */; };
 		24B93257ABF0C5795A4E6071 /* timerWatchExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 5B4C56493E454EFEB69CC910 /* timerWatchExtension.appex */; };
 		2B5A47B34DA84243A5C7E773 /* HIITWidgetExtension.appex in CopyFiles */ = {isa = PBXBuildFile; fileRef = B6CD284154D248AE9C0CE595 /* HIITWidgetExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3C3A2F838FACA4DA925B9774 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 98254734FACFE8AFE235012A /* Assets.xcassets */; };
@@ -17,6 +16,7 @@
 		78B92A0CF4FC4E4BA98FAFE2 /* TimerWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F851030D7A9990DD23B9296D /* TimerWatchApp.swift */; };
 		8B679F1E3531AEF4E05D46A4 /* ExtensionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63DBC2B8E41A5AE7542FBD61 /* ExtensionDelegate.swift */; };
 		9434B224BFE67F788D3CAA0B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 320027EF24D94A208BE481DC /* Foundation.framework */; };
+		9AD3F45A2F38EDDD005147E5 /* timerWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = E59E778CACFCF5C7D4AEBD3B /* timerWatch.app */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -50,7 +50,7 @@
 			dstPath = Watch;
 			dstSubfolderSpec = 16;
 			files = (
-				11F7F21D1ED3B37FEB23BBF4 /* timerWatch.app in Embed Watch Content */,
+				9AD3F45A2F38EDDD005147E5 /* timerWatch.app in Embed Watch Content */,
 			);
 			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -77,6 +77,25 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		DDC15D5EDEE047B5AC8459CD /* Copy Watch App Into iOS Bundle */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/Watch/timerWatch.app",
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(WRAPPER_NAME)/Watch",
+				"$(TARGET_BUILD_DIR)/$(WRAPPER_NAME)/Watch/timerWatch.app",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ -d \"${BUILT_PRODUCTS_DIR}/Watch/timerWatch.app\" ]; then\n  mkdir -p \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/Watch\"\n  ditto \"${BUILT_PRODUCTS_DIR}/Watch/timerWatch.app\" \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/Watch/timerWatch.app\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXFileReference section */
 		320027EF24D94A208BE481DC /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS11.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
@@ -245,6 +264,7 @@
 				9A3A27392F3463230077A48E /* Resources */,
 				D4FB5D5E8DC948159912B9F3 /* CopyFiles */,
 				050ADEBEE98E28585F3C47E3 /* Embed Watch Content */,
+				DDC15D5EDEE047B5AC8459CD /* Copy Watch App Into iOS Bundle */,
 			);
 			buildRules = (
 			);
@@ -516,7 +536,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -577,7 +597,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -604,6 +624,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "We need access to heart rate data to display workout stats.";
@@ -650,6 +671,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "We need access to heart rate data to display workout stats.";

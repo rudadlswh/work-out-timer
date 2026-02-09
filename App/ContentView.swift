@@ -42,6 +42,7 @@ struct ContentView: View {
             }
 #if os(iOS)
             .tabViewStyle(.page(indexDisplayMode: .never))
+            .modifier(TabSwipeLockModifier(isLocked: !isModePickerVisible))
 #endif
 
             settingsButton
@@ -87,6 +88,18 @@ struct ContentView: View {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in
             // 필요시 granted 체크
         }
+    }
+}
+
+private struct TabSwipeLockModifier: ViewModifier {
+    let isLocked: Bool
+
+    func body(content: Content) -> some View {
+        let minimumDistance: CGFloat = isLocked ? 10 : .greatestFiniteMagnitude
+        return content.highPriorityGesture(
+            DragGesture(minimumDistance: minimumDistance).onChanged { _ in },
+            including: .gesture
+        )
     }
 }
 
