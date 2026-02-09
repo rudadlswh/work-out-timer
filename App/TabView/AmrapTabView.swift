@@ -1,5 +1,8 @@
 import SwiftUI
 import UserNotifications
+#if os(iOS) && !targetEnvironment(macCatalyst)
+import ActivityKit
+#endif
 
 struct AmrapTabView: View {
     @Binding var isModePickerVisible: Bool
@@ -10,9 +13,13 @@ struct AmrapTabView: View {
     @State private var remainingSeconds: Int = 0
     @State private var timer: Timer? = nil
     @State private var isRunning: Bool = false
+#if os(iOS) && !targetEnvironment(macCatalyst)
+    @State private var activity: Activity<HIITAttributes>? = nil
+#endif
     @State private var exerciseInput: String = ""
     @State private var rounds: Int = 0
     @State private var endAlertEnabled: Bool = true
+    @State private var lastSyncedExerciseSummary: String = ""
 
     private let minuteOptions = Array(1...60)
 
@@ -158,6 +165,7 @@ struct AmrapTabView: View {
             if let average = heartRateManager.averageBpm {
                 HeartRateMetricView(title: "평균 심박", bpm: average)
             }
+            exerciseListView
             Button("다시 시작") {
                 resetAll()
             }
@@ -198,6 +206,7 @@ struct AmrapTabView: View {
         countdown = 0
         rounds = 0
         heartRateManager.start()
+        startLiveActivity(total: total)
         if endAlertEnabled {
             scheduleEndNotification(total: total)
         } else {
@@ -209,6 +218,7 @@ struct AmrapTabView: View {
             if remainingSeconds > 0 {
                 remainingSeconds -= 1
                 sendRunningState()
+                updateLiveActivity()
             } else {
                 timer?.invalidate()
                 isRunning = false
@@ -216,6 +226,7 @@ struct AmrapTabView: View {
                 if endAlertEnabled {
                     TimerUtilities.playBeep()
                 }
+                endLiveActivity()
                 sendCompleteState()
             }
         }
@@ -226,8 +237,10 @@ struct AmrapTabView: View {
         isRunning = false
         countdown = nil
         rounds = 0
+        lastSyncedExerciseSummary = ""
         heartRateManager.stop()
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        endLiveActivity()
         sendIdleState()
     }
 
@@ -237,8 +250,10 @@ struct AmrapTabView: View {
         timer?.invalidate()
         remainingSeconds = 0
         rounds = 0
+        lastSyncedExerciseSummary = ""
         heartRateManager.reset()
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        endLiveActivity()
         sendIdleState()
     }
 
@@ -249,7 +264,7 @@ struct AmrapTabView: View {
             phase: TimerSyncPhase.countdown,
             displaySeconds: cd,
             headline: "카운트다운",
-            exercise: nil
+            exercise: exercisePayload(force: true)
         )
     }
 
@@ -259,7 +274,7 @@ struct AmrapTabView: View {
             phase: TimerSyncPhase.running,
             displaySeconds: remainingSeconds,
             headline: "라운드 \(rounds)",
-            exercise: exerciseSummary
+            exercise: exercisePayload(force: false)
         )
     }
 
@@ -269,7 +284,7 @@ struct AmrapTabView: View {
             phase: TimerSyncPhase.complete,
             displaySeconds: 0,
             headline: "완료 라운드 \(rounds)",
-            exercise: nil
+            exercise: exercisePayload(force: true)
         )
     }
 
@@ -279,8 +294,37 @@ struct AmrapTabView: View {
             phase: TimerSyncPhase.idle,
             displaySeconds: 0,
             headline: "",
-            exercise: nil
+            exercise: ""
         )
+    }
+
+    private func exercisePayload(force: Bool) -> String? {
+        if force || exerciseSummary != lastSyncedExerciseSummary {
+            lastSyncedExerciseSummary = exerciseSummary
+            return exerciseSummary
+        }
+        return nil
+    }
+
+    private var exerciseListView: some View {
+        VStack(spacing: 6) {
+            Text("운동 목록")
+                .font(.headline)
+                .foregroundStyle(TimerTheme.secondaryText)
+            if exercises.isEmpty {
+                Text("운동 목록 없음")
+                    .font(.subheadline)
+                    .foregroundStyle(TimerTheme.secondaryText)
+            } else {
+                ForEach(Array(exercises.enumerated()), id: \.offset) { _, item in
+                    Text(item)
+                        .font(.subheadline)
+                        .foregroundStyle(TimerTheme.primaryText)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                }
+            }
+        }
     }
 
     private func scheduleEndNotification(total: Int) {
@@ -293,4 +337,56 @@ struct AmrapTabView: View {
         let request = UNNotificationRequest(identifier: "amrap_end", content: content, trigger: trigger)
         UNUserNotificationCenter.current().add(request)
     }
+
+#if os(iOS) && !targetEnvironment(macCatalyst)
+    private func startLiveActivity(total: Int) {
+        let attr = HIITAttributes(mode: TimerSyncMode.amrap, totalMinutes: total, intervalMinutes: 0)
+        let state = HIITAttributes.ContentState(
+            displaySeconds: remainingSeconds,
+            label: "남은 시간",
+            isRunning: true,
+            isCountdown: true,
+            sentAt: Date()
+        )
+        let content = ActivityContent(state: state, staleDate: nil)
+        if ActivityAuthorizationInfo().areActivitiesEnabled {
+            activity = try? Activity<HIITAttributes>.request(attributes: attr, content: content, pushType: nil)
+        }
+    }
+
+    private func updateLiveActivity() {
+        guard let activity else { return }
+        let state = HIITAttributes.ContentState(
+            displaySeconds: remainingSeconds,
+            label: "남은 시간",
+            isRunning: isRunning,
+            isCountdown: true,
+            sentAt: Date()
+        )
+        let content = ActivityContent(state: state, staleDate: nil)
+        Task {
+            await activity.update(content)
+        }
+    }
+
+    private func endLiveActivity() {
+        guard let activity else { return }
+        let state = HIITAttributes.ContentState(
+            displaySeconds: remainingSeconds,
+            label: "남은 시간",
+            isRunning: false,
+            isCountdown: true,
+            sentAt: Date()
+        )
+        let content = ActivityContent(state: state, staleDate: nil)
+        Task {
+            await activity.end(content, dismissalPolicy: .immediate)
+            self.activity = nil
+        }
+    }
+#else
+    private func startLiveActivity(total: Int) {}
+    private func updateLiveActivity() {}
+    private func endLiveActivity() {}
+#endif
 }

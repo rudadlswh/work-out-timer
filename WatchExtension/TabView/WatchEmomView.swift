@@ -103,6 +103,7 @@ struct WatchEmomView: View {
     }
 
     private func startCountdown() {
+        workoutManager.phoneTimerState = nil
         isTabLocked = true
         startCountdownTimer {
             startEmomTimer(interval: intervalMinutes, total: totalMinutes)

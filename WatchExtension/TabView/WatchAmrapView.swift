@@ -42,14 +42,15 @@ struct WatchAmrapView: View {
             }
             .padding(.horizontal, 8)
         }
-        .scrollDisabled(false)
+        .scrollDisabled(isRunning)
         .contentShape(Rectangle())
-        .simultaneousGesture(
+        .highPriorityGesture(
             TapGesture(count: 2).onEnded {
                 if isRunning {
                     rounds += 1
                 }
-            }
+            },
+            including: .all
         )
     }
 
@@ -117,6 +118,7 @@ struct WatchAmrapView: View {
     }
 
     private func startCountdown() {
+        workoutManager.phoneTimerState = nil
         isTabLocked = true
         startCountdownTimer {
             startAmrapTimer(total: totalMinutes)

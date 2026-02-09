@@ -10,6 +10,7 @@ struct WatchForTimeView: View {
     @State private var timer: Timer? = nil
     @State private var isRunning: Bool = false
     @State private var exerciseInput: String = ""
+    @State private var showComplete: Bool = false
 
     private var exercises: [String] {
         WatchTimerUtilities.parseExercises(exerciseInput)
@@ -28,7 +29,7 @@ struct WatchForTimeView: View {
                     .font(.headline)
                 if let state = phoneState {
                     PhoneTimerStatusView(state: state, bpm: workoutManager.currentBpm, averageBpm: workoutManager.averageBpm)
-                } else if countdown == nil {
+                } else if countdown == nil, !showComplete {
                     inputView
                 } else if let cd = countdown, cd > 0 {
                     countdownView(cd)
@@ -103,7 +104,9 @@ struct WatchForTimeView: View {
     }
 
     private func startCountdown() {
+        workoutManager.phoneTimerState = nil
         isTabLocked = true
+        showComplete = false
         startCountdownTimer {
             startForTimeTimer(total: totalMinutes)
         }
@@ -137,6 +140,7 @@ struct WatchForTimeView: View {
                 isRunning = false
                 workoutManager.stopWorkout()
                 WatchTimerUtilities.playBeep()
+                showComplete = true
                 isTabLocked = false
             } else {
                 elapsedSeconds += 1
@@ -147,7 +151,8 @@ struct WatchForTimeView: View {
     private func stopTimer() {
         timer?.invalidate()
         isRunning = false
-        countdown = nil
+        countdown = 0
+        showComplete = true
         workoutManager.stopWorkout()
         isTabLocked = false
     }
@@ -157,6 +162,7 @@ struct WatchForTimeView: View {
         isRunning = false
         timer?.invalidate()
         elapsedSeconds = 0
+        showComplete = false
         workoutManager.stopWorkout()
         isTabLocked = false
     }
