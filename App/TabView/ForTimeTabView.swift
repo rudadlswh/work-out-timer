@@ -1,15 +1,22 @@
 import SwiftUI
+#if os(iOS) && !targetEnvironment(macCatalyst)
+import ActivityKit
+#endif
 
 struct ForTimeTabView: View {
     @Binding var isModePickerVisible: Bool
     @EnvironmentObject private var heartRateManager: HeartRateManager
 
-    @State private var totalMinutes: Int = 5
+    @State private var totalMinutes: Int = 30
     @State private var countdown: Int? = nil
     @State private var elapsedSeconds: Int = 0
     @State private var timer: Timer? = nil
     @State private var isRunning: Bool = false
+#if os(iOS) && !targetEnvironment(macCatalyst)
+    @State private var activity: Activity<HIITAttributes>? = nil
+#endif
     @State private var exerciseInput: String = ""
+    @State private var lastSyncedExerciseSummary: String = ""
 
     private let minuteOptions = Array(1...60)
 
@@ -133,6 +140,7 @@ struct ForTimeTabView: View {
             if let average = heartRateManager.averageBpm {
                 HeartRateMetricView(title: "평균 심박", bpm: average)
             }
+            exerciseListView
             Button("다시 시작") {
                 resetAll()
             }
@@ -172,6 +180,7 @@ struct ForTimeTabView: View {
         isRunning = true
         countdown = 0
         heartRateManager.start()
+        startLiveActivity(total: total)
         TimerUtilities.playBeep()
         sendRunningState()
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
@@ -182,6 +191,7 @@ struct ForTimeTabView: View {
                 isRunning = false
                 heartRateManager.stop()
                 TimerUtilities.playBeep()
+                endLiveActivity()
                 sendCompleteState()
             } else {
                 elapsedSeconds += 1
@@ -194,7 +204,9 @@ struct ForTimeTabView: View {
         timer?.invalidate()
         isRunning = false
         countdown = 0
+        lastSyncedExerciseSummary = ""
         heartRateManager.stop()
+        endLiveActivity()
         sendIdleState()
     }
 
@@ -203,7 +215,9 @@ struct ForTimeTabView: View {
         isRunning = false
         timer?.invalidate()
         elapsedSeconds = 0
+        lastSyncedExerciseSummary = ""
         heartRateManager.reset()
+        endLiveActivity()
         sendIdleState()
     }
 
@@ -214,7 +228,7 @@ struct ForTimeTabView: View {
             phase: TimerSyncPhase.countdown,
             displaySeconds: cd,
             headline: "카운트다운",
-            exercise: nil
+            exercise: exercisePayload(force: true)
         )
     }
 
@@ -224,7 +238,7 @@ struct ForTimeTabView: View {
             phase: TimerSyncPhase.running,
             displaySeconds: elapsedSeconds,
             headline: "경과 시간",
-            exercise: exerciseSummary
+            exercise: exercisePayload(force: false)
         )
     }
 
@@ -234,7 +248,7 @@ struct ForTimeTabView: View {
             phase: TimerSyncPhase.complete,
             displaySeconds: elapsedSeconds,
             headline: "소요 시간",
-            exercise: nil
+            exercise: exercisePayload(force: true)
         )
     }
 
@@ -244,7 +258,88 @@ struct ForTimeTabView: View {
             phase: TimerSyncPhase.idle,
             displaySeconds: 0,
             headline: "",
-            exercise: nil
+            exercise: ""
         )
     }
+
+    private func exercisePayload(force: Bool) -> String? {
+        if force || exerciseSummary != lastSyncedExerciseSummary {
+            lastSyncedExerciseSummary = exerciseSummary
+            return exerciseSummary
+        }
+        return nil
+    }
+
+    private var exerciseListView: some View {
+        VStack(spacing: 6) {
+            Text("운동 목록")
+                .font(.headline)
+                .foregroundStyle(TimerTheme.secondaryText)
+            if exercises.isEmpty {
+                Text("운동 목록 없음")
+                    .font(.subheadline)
+                    .foregroundStyle(TimerTheme.secondaryText)
+            } else {
+                ForEach(Array(exercises.enumerated()), id: \.offset) { _, item in
+                    Text(item)
+                        .font(.subheadline)
+                        .foregroundStyle(TimerTheme.primaryText)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                }
+            }
+        }
+    }
+
+#if os(iOS) && !targetEnvironment(macCatalyst)
+    private func startLiveActivity(total: Int) {
+        let attr = HIITAttributes(mode: TimerSyncMode.forTime, totalMinutes: total, intervalMinutes: 0)
+        let state = HIITAttributes.ContentState(
+            displaySeconds: elapsedSeconds,
+            label: "경과 시간",
+            isRunning: true,
+            isCountdown: false,
+            sentAt: Date()
+        )
+        let content = ActivityContent(state: state, staleDate: nil)
+        if ActivityAuthorizationInfo().areActivitiesEnabled {
+            activity = try? Activity<HIITAttributes>.request(attributes: attr, content: content, pushType: nil)
+        }
+    }
+
+    private func updateLiveActivity() {
+        guard let activity else { return }
+        let state = HIITAttributes.ContentState(
+            displaySeconds: elapsedSeconds,
+            label: "경과 시간",
+            isRunning: isRunning,
+            isCountdown: false,
+            sentAt: Date()
+        )
+        let content = ActivityContent(state: state, staleDate: nil)
+        Task {
+            await activity.update(content)
+        }
+    }
+
+    private func endLiveActivity() {
+        guard let activity else { return }
+        let state = HIITAttributes.ContentState(
+            displaySeconds: elapsedSeconds,
+            label: "경과 시간",
+            isRunning: false,
+            isCountdown: false,
+            sentAt: Date()
+        )
+        let content = ActivityContent(state: state, staleDate: nil)
+        Task {
+            await activity.end(content, dismissalPolicy: .immediate)
+            self.activity = nil
+        }
+    }
+#else
+    private func startLiveActivity(total: Int) {}
+    private func updateLiveActivity() {}
+    private func endLiveActivity() {}
+#endif
 }

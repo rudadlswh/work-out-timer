@@ -7,9 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		11F7F21D1ED3B37FEB23BBF4 /* timerWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = E59E778CACFCF5C7D4AEBD3B /* timerWatch.app */; };
 		24B93257ABF0C5795A4E6071 /* timerWatchExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 5B4C56493E454EFEB69CC910 /* timerWatchExtension.appex */; };
-		2B5A47B34DA84243A5C7E773 /* HIITWidgetExtension.appex in CopyFiles */ = {isa = PBXBuildFile; fileRef = B6CD284154D248AE9C0CE595 /* HIITWidgetExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2B5A47B34DA84243A5C7E773 /* HIITWidgetExtension.appex in Copy Files */ = {isa = PBXBuildFile; fileRef = B6CD284154D248AE9C0CE595 /* HIITWidgetExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3C3A2F838FACA4DA925B9774 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 98254734FACFE8AFE235012A /* Assets.xcassets */; };
 		577DBA86B59599FE67A4D978 /* WatchContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C8962BCD90C243CAF581B1C /* WatchContentView.swift */; };
 		5DA500165BF9575698C75DA2 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 320027EF24D94A208BE481DC /* Foundation.framework */; };
@@ -17,6 +16,7 @@
 		78B92A0CF4FC4E4BA98FAFE2 /* TimerWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F851030D7A9990DD23B9296D /* TimerWatchApp.swift */; };
 		8B679F1E3531AEF4E05D46A4 /* ExtensionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63DBC2B8E41A5AE7542FBD61 /* ExtensionDelegate.swift */; };
 		9434B224BFE67F788D3CAA0B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 320027EF24D94A208BE481DC /* Foundation.framework */; };
+		9AD3F45A2F38EDDD005147E5 /* timerWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = E59E778CACFCF5C7D4AEBD3B /* timerWatch.app */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -50,7 +50,7 @@
 			dstPath = Watch;
 			dstSubfolderSpec = 16;
 			files = (
-				11F7F21D1ED3B37FEB23BBF4 /* timerWatch.app in Embed Watch Content */,
+				9AD3F45A2F38EDDD005147E5 /* timerWatch.app in Embed Watch Content */,
 			);
 			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -66,14 +66,15 @@
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D4FB5D5E8DC948159912B9F3 /* CopyFiles */ = {
+		D4FB5D5E8DC948159912B9F3 /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				2B5A47B34DA84243A5C7E773 /* HIITWidgetExtension.appex in CopyFiles */,
+				2B5A47B34DA84243A5C7E773 /* HIITWidgetExtension.appex in Copy Files */,
 			);
+			name = "Copy Files";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -243,8 +244,9 @@
 				9A3A27372F3463230077A48E /* Sources */,
 				9A3A27382F3463230077A48E /* Frameworks */,
 				9A3A27392F3463230077A48E /* Resources */,
-				D4FB5D5E8DC948159912B9F3 /* CopyFiles */,
+				D4FB5D5E8DC948159912B9F3 /* Copy Files */,
 				050ADEBEE98E28585F3C47E3 /* Embed Watch Content */,
+				DDC15D5EDEE047B5AC8459CD /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -373,6 +375,25 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		DDC15D5EDEE047B5AC8459CD /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/Watch/timerWatch.app",
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(WRAPPER_NAME)/Watch",
+				"$(TARGET_BUILD_DIR)/$(WRAPPER_NAME)/Watch/timerWatch.app",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ -d \"${BUILT_PRODUCTS_DIR}/Watch/timerWatch.app\" ]; then\n  mkdir -p \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/Watch\"\n  ditto \"${BUILT_PRODUCTS_DIR}/Watch/timerWatch.app\" \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/Watch/timerWatch.app\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		634225B76FAC4AB78D082C20 /* Sources */ = {
@@ -516,7 +537,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -577,7 +598,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -604,6 +625,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "We need access to heart rate data to display workout stats.";
@@ -650,6 +672,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "We need access to heart rate data to display workout stats.";

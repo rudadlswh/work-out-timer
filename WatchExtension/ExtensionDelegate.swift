@@ -1,11 +1,7 @@
 import HealthKit
 import WatchKit
 
-final class ExtensionDelegate: NSObject, WKApplicationDelegate, WKExtensionDelegate {
-    func handleWorkoutConfiguration(_ workoutConfiguration: HKWorkoutConfiguration) {
-        startWorkout(with: workoutConfiguration)
-    }
-
+final class ExtensionDelegate: NSObject, WKApplicationDelegate {
     func handle(_ workoutConfiguration: HKWorkoutConfiguration) {
         startWorkout(with: workoutConfiguration)
     }

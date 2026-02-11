@@ -102,35 +102,54 @@ struct HIITActivityWidget: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: HIITAttributes.self) { context in
             // Lock screen/banner UI
+            let timerDate = timerDate(from: context.state)
             VStack {
-                Text("다음 인터벌까지")
-                Text("\(context.state.nextBeep)초")
-                    .font(.largeTitle)
-                    .monospacedDigit()
+                Text(context.state.label)
+                Text(timerDate, style: .timer)
+                    .font(.largeTitle.monospacedDigit())
             }
             .padding()
         } dynamicIsland: { context in
-            DynamicIsland {
+            let timerDate = timerDate(from: context.state)
+            let isEmom = context.attributes.mode == "EMOM"
+            return DynamicIsland {
                 // Expanded UI
                 DynamicIslandExpandedRegion(.center) {
                     VStack {
-                        Text("다음 인터벌까지")
-                        Text("\(context.state.nextBeep)초")
-                            .font(.title)
-                            .monospacedDigit()
+                        Text(context.state.label)
+                        Text(timerDate, style: .timer)
+                            .font(.title.monospacedDigit())
                     }
                 }
             } compactLeading: {
-                Text("\(context.state.nextBeep)s")
-                    .monospacedDigit()
+                if isEmom {
+                    Text(context.state.label)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                } else {
+                    Text(timerDate, style: .timer)
+                        .monospacedDigit()
+                }
             } compactTrailing: {
-                Text("HIIT")
+                if isEmom {
+                    Text(timerDate, style: .timer)
+                        .monospacedDigit()
+                } else {
+                    Text(context.attributes.mode)
+                }
             } minimal: {
-                Text("\(context.state.nextBeep)")
+                Text(timerDate, style: .timer)
                     .monospacedDigit()
             }
         }
     }
+}
+
+private func timerDate(from state: HIITAttributes.ContentState) -> Date {
+    if state.isCountdown {
+        return state.sentAt.addingTimeInterval(TimeInterval(max(0, state.displaySeconds)))
+    }
+    return state.sentAt.addingTimeInterval(TimeInterval(-max(0, state.displaySeconds)))
 }
 
 #if APP_EXTENSION

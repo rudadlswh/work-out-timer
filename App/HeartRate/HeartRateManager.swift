@@ -19,6 +19,11 @@ final class HeartRateManager: NSObject, ObservableObject {
     @Published var lastPingSucceeded: Bool?
     @Published var isPinging: Bool = false
     @Published var lastHeartRateDate: Date?
+    @Published var useDummyHeartRate: Bool = HeartRateManager.defaultDummyHeartRateEnabled {
+        didSet {
+            updateDummyMode()
+        }
+    }
 
     private var sumBpm: Double = 0
     private var sampleCount: Int = 0
@@ -33,6 +38,17 @@ final class HeartRateManager: NSObject, ObservableObject {
     private var currentPingId: String?
     private var pingTimeoutWorkItem: DispatchWorkItem?
     private let pingTimeout: TimeInterval = 10
+    private var dummyTimer: Timer?
+    private var dummyBpm: Int = 95
+    private var dummyDirection: Int = 1
+
+    private static let defaultDummyHeartRateEnabled: Bool = {
+    #if targetEnvironment(simulator)
+        return true
+    #else
+        return false
+    #endif
+    }()
 
     override init() {
         super.init()
@@ -50,6 +66,10 @@ final class HeartRateManager: NSObject, ObservableObject {
     func start() {
         resetMetrics()
         isCollecting = true
+        if useDummyHeartRate {
+            startDummyHeartRate()
+            return
+        }
         requestAuthorizationIfNeeded { [weak self] success in
             guard let self else { return }
             if success {
@@ -62,15 +82,25 @@ final class HeartRateManager: NSObject, ObservableObject {
 
     func stop() {
         isCollecting = false
+        stopDummyHeartRate()
+        if useDummyHeartRate {
+            return
+        }
         sendCommand("stop")
     }
 
     func reset() {
         isCollecting = false
+        stopDummyHeartRate()
         resetMetrics()
     }
 
+    func setDummyHeartRateEnabled(_ enabled: Bool) {
+        useDummyHeartRate = enabled
+    }
+
     func refreshConnectionStatus() {
+        ensureSessionActivated()
         updateSessionState()
     }
 
@@ -88,6 +118,12 @@ final class HeartRateManager: NSObject, ObservableObject {
             self.lastPingDate = Date()
         }
         schedulePingTimeout()
+        ensureSessionActivated()
+        if session.activationState != .activated {
+            pendingPing = true
+            updatePingProgress("세션 활성화 대기")
+            return
+        }
         sendPingMessage(session, pingId: pingId)
         sendPingUserInfo(session, pingId: pingId)
     }
@@ -98,6 +134,49 @@ final class HeartRateManager: NSObject, ObservableObject {
         lastHeartRateDate = nil
         sumBpm = 0
         sampleCount = 0
+    }
+
+    private func updateDummyMode() {
+        if useDummyHeartRate {
+            stopDummyHeartRate()
+            if isCollecting {
+                startDummyHeartRate()
+            }
+        } else {
+            stopDummyHeartRate()
+            if isCollecting {
+                start()
+            }
+        }
+    }
+
+    private func startDummyHeartRate() {
+        stopDummyHeartRate()
+        let timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            guard let self, self.isCollecting else { return }
+            let bpm = self.nextDummyHeartRate()
+            self.handleHeartRate(Double(bpm))
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        dummyTimer = timer
+    }
+
+    private func stopDummyHeartRate() {
+        dummyTimer?.invalidate()
+        dummyTimer = nil
+    }
+
+    private func nextDummyHeartRate() -> Int {
+        let drift = Int.random(in: -2...4)
+        dummyBpm += drift * dummyDirection
+        if dummyBpm > 145 {
+            dummyBpm = 145
+            dummyDirection = -1
+        } else if dummyBpm < 75 {
+            dummyBpm = 75
+            dummyDirection = 1
+        }
+        return dummyBpm
     }
 
     private func configureMirroring() {
@@ -159,6 +238,7 @@ final class HeartRateManager: NSObject, ObservableObject {
     }
 
     private func updateSessionState() {
+        ensureSessionActivated()
         guard let session else {
             DispatchQueue.main.async {
                 self.isSessionSupported = WCSession.isSupported()
@@ -183,6 +263,13 @@ final class HeartRateManager: NSObject, ObservableObject {
             if self.pendingPing, isReachable, let pingId = self.currentPingId {
                 self.sendPingMessage(session, pingId: pingId)
             }
+        }
+    }
+
+    private func ensureSessionActivated() {
+        guard let session else { return }
+        if session.activationState != .activated {
+            session.activate()
         }
     }
 
@@ -274,14 +361,16 @@ final class HeartRateManager: NSObject, ObservableObject {
     }
 
     func sendTimerState(mode: String, phase: String, displaySeconds: Int, headline: String, exercise: String?) {
-        let payload: [String: Any] = [
+        var payload: [String: Any] = [
             "type": "timerState",
             "mode": mode,
             "phase": phase,
             "displaySeconds": max(0, displaySeconds),
-            "headline": headline,
-            "exercise": exercise ?? ""
+            "headline": headline
         ]
+        if let exercise {
+            payload["exercise"] = exercise
+        }
         sendMessageOrContext(payload)
     }
 
@@ -292,6 +381,8 @@ final class HeartRateManager: NSObject, ObservableObject {
 
     private func sendMessageOrUserInfo(_ payload: [String: Any]) {
         guard let session else { return }
+        ensureSessionActivated()
+        guard session.activationState == .activated else { return }
         if session.isReachable {
             session.sendMessage(payload, replyHandler: nil, errorHandler: nil)
         } else {
@@ -301,6 +392,8 @@ final class HeartRateManager: NSObject, ObservableObject {
 
     private func sendMessageOrContext(_ payload: [String: Any]) {
         guard let session else { return }
+        ensureSessionActivated()
+        guard session.activationState == .activated else { return }
         if session.isReachable {
             session.sendMessage(payload, replyHandler: nil, errorHandler: nil)
         } else {
@@ -346,6 +439,7 @@ extension HeartRateManager: WCSessionDelegate {
     }
 
     private func handleHeartRateMessage(_ message: [String: Any]) {
+        guard !useDummyHeartRate else { return }
         if message["pong"] as? Bool != nil {
             handlePong(message)
             return
@@ -402,6 +496,7 @@ extension HeartRateManager: HKWorkoutSessionDelegate, HKLiveWorkoutBuilderDelega
     }
 
     func workoutBuilder(_ workoutBuilder: HKLiveWorkoutBuilder, didCollectDataOf collectedTypes: Set<HKSampleType>) {
+        guard !useDummyHeartRate else { return }
         guard let heartRateType = HKQuantityType.quantityType(forIdentifier: .heartRate),
               collectedTypes.contains(heartRateType) else { return }
         guard let statistics = workoutBuilder.statistics(for: heartRateType),
@@ -432,6 +527,7 @@ final class HeartRateManager: ObservableObject {
     @Published var lastPingSucceeded: Bool?
     @Published var isPinging: Bool = false
     @Published var lastHeartRateDate: Date?
+    @Published var useDummyHeartRate: Bool = false
 
     func start() {}
     func stop() {}
@@ -439,5 +535,6 @@ final class HeartRateManager: ObservableObject {
     func refreshConnectionStatus() {}
     func pingWatch() {}
     func sendTimerState(mode: String, phase: String, displaySeconds: Int, headline: String, exercise: String?) {}
+    func setDummyHeartRateEnabled(_ enabled: Bool) {}
 }
 #endif

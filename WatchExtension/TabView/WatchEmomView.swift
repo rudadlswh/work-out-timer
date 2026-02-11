@@ -5,7 +5,7 @@ struct WatchEmomView: View {
     @Binding var isTabLocked: Bool
 
     @State private var intervalMinutes: Int = 1
-    @State private var totalMinutes: Int = 5
+    @State private var totalMinutes: Int = 15
     @State private var countdown: Int? = nil
     @State private var remainingSeconds: Int = 0
     @State private var nextBeep: Int = 0
@@ -103,6 +103,7 @@ struct WatchEmomView: View {
     }
 
     private func startCountdown() {
+        workoutManager.phoneTimerState = nil
         isTabLocked = true
         startCountdownTimer {
             startEmomTimer(interval: intervalMinutes, total: totalMinutes)
