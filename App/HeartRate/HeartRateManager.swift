@@ -41,6 +41,7 @@ final class HeartRateManager: NSObject, ObservableObject {
     private var dummyTimer: Timer?
     private var dummyBpm: Int = 95
     private var dummyDirection: Int = 1
+    private var isActivatingSession: Bool = false
 
     private static let defaultDummyHeartRateEnabled: Bool = {
     #if targetEnvironment(simulator)
@@ -58,8 +59,8 @@ final class HeartRateManager: NSObject, ObservableObject {
         guard supported else { return }
         let wcSession = WCSession.default
         wcSession.delegate = self
-        wcSession.activate()
         session = wcSession
+        ensureSessionActivated()
         updateSessionState()
     }
 
@@ -105,6 +106,10 @@ final class HeartRateManager: NSObject, ObservableObject {
     }
 
     func pingWatch() {
+        guard WCSession.isSupported() else {
+            updatePingStatus(result: "세션 미지원", success: false)
+            return
+        }
         guard let session else {
             updatePingStatus(result: "세션 없음", success: false)
             return
@@ -119,6 +124,10 @@ final class HeartRateManager: NSObject, ObservableObject {
         }
         schedulePingTimeout()
         ensureSessionActivated()
+        guard session.isPaired, session.isWatchAppInstalled else {
+            updatePingStatus(result: "워치 앱 미설치", success: false)
+            return
+        }
         if session.activationState != .activated {
             pendingPing = true
             updatePingProgress("세션 활성화 대기")
@@ -267,10 +276,30 @@ final class HeartRateManager: NSObject, ObservableObject {
     }
 
     private func ensureSessionActivated() {
-        guard let session else { return }
-        if session.activationState != .activated {
-            session.activate()
+        guard WCSession.isSupported(), let session else { return }
+        guard !isActivatingSession else { return }
+        guard session.activationState == .notActivated else { return }
+
+        isActivatingSession = true
+        session.activate()
+    }
+
+    private func canSend(to session: WCSession) -> Bool {
+        guard WCSession.isSupported() else { return false }
+        guard session.activationState == .activated else { return false }
+        guard session.isPaired, session.isWatchAppInstalled else { return false }
+        return true
+    }
+
+    private func canPing(_ session: WCSession) -> Bool {
+        guard canSend(to: session) else {
+            if !session.isPaired || !session.isWatchAppInstalled {
+                updatePingStatus(result: "워치 앱 미설치", success: false)
+            }
+            return false
         }
+
+        return true
     }
 
     private func autoConnectIfPossible() {
@@ -311,6 +340,7 @@ final class HeartRateManager: NSObject, ObservableObject {
     }
 
     private func sendPingMessage(_ session: WCSession, pingId: String) {
+        guard canPing(session) else { return }
         let payload: [String: Any] = ["command": "ping", "pingId": pingId]
         session.sendMessage(payload, replyHandler: { [weak self] reply in
             self?.handlePong(reply)
@@ -322,6 +352,7 @@ final class HeartRateManager: NSObject, ObservableObject {
     }
 
     private func sendPingUserInfo(_ session: WCSession, pingId: String) {
+        guard canPing(session) else { return }
         let payload: [String: Any] = ["command": "ping", "pingId": pingId]
         session.transferUserInfo(payload)
     }
@@ -380,9 +411,10 @@ final class HeartRateManager: NSObject, ObservableObject {
     }
 
     private func sendMessageOrUserInfo(_ payload: [String: Any]) {
+        guard WCSession.isSupported() else { return }
         guard let session else { return }
         ensureSessionActivated()
-        guard session.activationState == .activated else { return }
+        guard canSend(to: session) else { return }
         if session.isReachable {
             session.sendMessage(payload, replyHandler: nil, errorHandler: nil)
         } else {
@@ -391,9 +423,10 @@ final class HeartRateManager: NSObject, ObservableObject {
     }
 
     private func sendMessageOrContext(_ payload: [String: Any]) {
+        guard WCSession.isSupported() else { return }
         guard let session else { return }
         ensureSessionActivated()
-        guard session.activationState == .activated else { return }
+        guard canSend(to: session) else { return }
         if session.isReachable {
             session.sendMessage(payload, replyHandler: nil, errorHandler: nil)
         } else {
@@ -404,17 +437,20 @@ final class HeartRateManager: NSObject, ObservableObject {
 
 extension HeartRateManager: WCSessionDelegate {
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
+        isActivatingSession = false
         // 상태 변경 필요 시 사용
         updateSessionState()
     }
 
     func sessionDidBecomeInactive(_ session: WCSession) {
+        isActivatingSession = false
         // 필요 시 처리
         updateSessionState()
     }
 
     func sessionDidDeactivate(_ session: WCSession) {
-        session.activate()
+        isActivatingSession = false
+        ensureSessionActivated()
         updateSessionState()
     }
 
