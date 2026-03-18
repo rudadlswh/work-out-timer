@@ -14,11 +14,15 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>운동 중 심박을 표시하기 위해 심박 데이터를 사용합니다.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>운동 기록을 저장하기 위해 운동 데이터를 사용합니다.</string>
+	<key>WKApplication</key>
+	<true/>
 	<key>WKCompanionAppBundleIdentifier</key>
-	<string>com.example.timer</string>
+	<string>com.chogm.timer</string>
 	<key>WKSupportsRunningWithoutiOSApp</key>
 	<false/>
-	<key>WKWatchKitApp</key>
-	<true/>
 </dict>
 </plist>
