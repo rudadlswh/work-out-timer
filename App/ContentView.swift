@@ -1,5 +1,8 @@
 import SwiftUI
 import UserNotifications
+#if canImport(UIKit)
+import UIKit
+#endif
 
 enum WorkoutMode: String, CaseIterable, Identifiable {
     case emom = "EMOM"
@@ -52,7 +55,11 @@ struct ContentView: View {
             settingsButton
         }
         .tint(TimerTheme.actionTint)
+        .toolbar { keyboardToolbar }
         .onAppear(perform: requestNotificationPermission)
+        .onChange(of: workoutMode, initial: false) { _, _ in
+            dismissActiveKeyboard()
+        }
         .onChange(of: scenePhase, initial: false) { _, newPhase in
             if newPhase == .inactive || newPhase == .background {
                 // 옵션: 알림 예약 유지 또는 정리
@@ -101,10 +108,26 @@ struct ContentView: View {
         .zIndex(2)
     }
 
+    @ToolbarContentBuilder
+    private var keyboardToolbar: some ToolbarContent {
+        ToolbarItemGroup(placement: .keyboard) {
+            Spacer()
+            Button("완료") {
+                dismissActiveKeyboard()
+            }
+        }
+    }
+
     private func requestNotificationPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in
             // 필요시 granted 체크
         }
+    }
+
+    private func dismissActiveKeyboard() {
+#if canImport(UIKit)
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+#endif
     }
 }
 

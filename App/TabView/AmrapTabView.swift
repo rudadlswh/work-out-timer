@@ -7,6 +7,7 @@ import ActivityKit
 struct AmrapTabView: View {
     @Binding var isModePickerVisible: Bool
     @EnvironmentObject private var heartRateManager: HeartRateManager
+    @FocusState private var focusedField: Field?
 
     @State private var totalMinutes: Int = 20
     @State private var countdown: Int? = nil
@@ -23,6 +24,10 @@ struct AmrapTabView: View {
 
     private let minuteOptions = Array(1...60)
 
+    private enum Field: Hashable {
+        case exercise
+    }
+
     private var exercises: [String] {
         TimerUtilities.parseExercises(exerciseInput)
     }
@@ -32,15 +37,19 @@ struct AmrapTabView: View {
     }
 
     var body: some View {
-        VStack(spacing: 24) {
-            if countdown == nil {
-                inputView
-            } else if let cd = countdown, cd > 0 {
-                countdownView(cd)
-            } else if isRunning {
-                runningView
-            } else {
-                completeView
+        ZStack {
+            dismissalBackground
+
+            VStack(spacing: 24) {
+                if countdown == nil {
+                    inputView
+                } else if let cd = countdown, cd > 0 {
+                    countdownView(cd)
+                } else if isRunning {
+                    runningView
+                } else {
+                    completeView
+                }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -89,6 +98,7 @@ struct AmrapTabView: View {
                     .foregroundStyle(TimerTheme.secondaryText)
                 TextEditor(text: $exerciseInput)
                     .scrollContentBackground(.hidden)
+                    .focused($focusedField, equals: .exercise)
                     .frame(height: 90)
                     .padding(8)
                     .background(Color.black.opacity(0.25))
@@ -102,6 +112,7 @@ struct AmrapTabView: View {
                     .padding(.horizontal, 12)
             }
             Button("시작") {
+                dismissKeyboard()
                 startCountdown()
             }
             .buttonStyle(.borderedProminent)
@@ -176,6 +187,16 @@ struct AmrapTabView: View {
 
     private func updateModePickerVisibility() {
         isModePickerVisible = !isRunning && countdown == nil
+    }
+
+    private var dismissalBackground: some View {
+        Color.clear
+            .contentShape(Rectangle())
+            .onTapGesture(perform: dismissKeyboard)
+    }
+
+    private func dismissKeyboard() {
+        focusedField = nil
     }
 
     private func startCountdown() {

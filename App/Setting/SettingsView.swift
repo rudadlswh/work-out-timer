@@ -105,8 +105,10 @@ struct SettingsView: View {
             statusRow(title: "워치 앱 설치", value: supportAwareText(heartRateManager.isWatchAppInstalled))
             statusRow(title: "실시간 연결", value: supportAwareText(heartRateManager.isReachable))
             statusRow(title: "세션 상태", value: heartRateManager.activationStateText)
+#if DEBUG
             statusRow(title: "핑 상태", value: pingStatusText, valueColor: pingStatusColor)
             statusRow(title: "마지막 핑", value: lastPingTimeText)
+#endif
 
             Button("상태 새로고침") {
                 heartRateManager.refreshConnectionStatus()
@@ -114,12 +116,14 @@ struct SettingsView: View {
             .buttonStyle(.bordered)
             .tint(TimerTheme.actionTint)
 
+#if DEBUG
             Button("핑 테스트") {
                 heartRateManager.pingWatch()
             }
             .buttonStyle(.bordered)
             .tint(TimerTheme.actionTint)
             .disabled(heartRateManager.isPinging)
+#endif
         }
         .padding(16)
         .background(Color.black.opacity(0.25))
@@ -181,6 +185,7 @@ struct SettingsView: View {
             Text("심박수 확인")
                 .font(.headline)
                 .foregroundStyle(TimerTheme.primaryText)
+#if DEBUG
             Toggle("더미 심박수 사용", isOn: Binding(
                 get: { heartRateManager.useDummyHeartRate },
                 set: { heartRateManager.setDummyHeartRateEnabled($0) }
@@ -189,6 +194,7 @@ struct SettingsView: View {
             Text("시뮬레이터나 연동 불가 상태에서도 심박수 UI를 확인할 수 있습니다.")
                 .font(.caption)
                 .foregroundStyle(TimerTheme.secondaryText)
+#endif
             statusRow(title: "측정 상태", value: heartRateManager.heartRateStatusText)
             statusRow(title: "현재 심박", value: heartRateManager.currentBpm.map { "\($0) bpm" } ?? "미수신")
             statusRow(title: "평균 심박", value: heartRateManager.averageBpm.map { "\($0) bpm" } ?? "미수신")

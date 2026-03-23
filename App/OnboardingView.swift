@@ -24,7 +24,7 @@ struct OnboardingView: View {
 
     private var header: some View {
         VStack(spacing: 8) {
-            Text("HIIT 타이머 기능 안내")
+            Text("WODy 기능 안내")
                 .font(.title2.bold())
                 .foregroundStyle(TimerTheme.primaryText)
         }
@@ -39,7 +39,7 @@ struct OnboardingView: View {
             featureRow(
                 icon: "timer",
                 title: "EMOM / AMRAP / FOR TIME",
-                detail: "세 가지 HIIT 타이머를 제공합니다."
+                detail: "세 가지 WOD 타이머를 제공합니다."
             )
             featureRow(
                 icon: "list.bullet.rectangle",
@@ -73,7 +73,7 @@ struct OnboardingView: View {
                 .foregroundStyle(TimerTheme.primaryText)
             Text("- AMRAP은 실행 화면 더블탭으로 라운드를 추가합니다.")
             Text("- 워치 연동은 iPhone/Watch 모두 앱 실행 중일 때 가장 안정적입니다.")
-            Text("- 설정에서 핑 테스트/심박 상태를 확인할 수 있습니다.")
+            Text("- 설정에서 Apple Watch 연결과 심박 상태를 확인할 수 있습니다.")
         }
         .font(.subheadline)
         .foregroundStyle(TimerTheme.secondaryText)

@@ -6,6 +6,7 @@ import ActivityKit
 struct ForTimeTabView: View {
     @Binding var isModePickerVisible: Bool
     @EnvironmentObject private var heartRateManager: HeartRateManager
+    @FocusState private var focusedField: Field?
 
     @State private var totalMinutes: Int = 30
     @State private var countdown: Int? = nil
@@ -20,6 +21,10 @@ struct ForTimeTabView: View {
 
     private let minuteOptions = Array(1...60)
 
+    private enum Field: Hashable {
+        case exercise
+    }
+
     private var exercises: [String] {
         TimerUtilities.parseExercises(exerciseInput)
     }
@@ -29,15 +34,19 @@ struct ForTimeTabView: View {
     }
 
     var body: some View {
-        VStack(spacing: 24) {
-            if countdown == nil {
-                inputView
-            } else if let cd = countdown, cd > 0 {
-                countdownView(cd)
-            } else if isRunning {
-                runningView
-            } else {
-                completeView
+        ZStack {
+            dismissalBackground
+
+            VStack(spacing: 24) {
+                if countdown == nil {
+                    inputView
+                } else if let cd = countdown, cd > 0 {
+                    countdownView(cd)
+                } else if isRunning {
+                    runningView
+                } else {
+                    completeView
+                }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -67,6 +76,7 @@ struct ForTimeTabView: View {
                     .foregroundStyle(TimerTheme.secondaryText)
                 TextEditor(text: $exerciseInput)
                     .scrollContentBackground(.hidden)
+                    .focused($focusedField, equals: .exercise)
                     .frame(height: 90)
                     .padding(8)
                     .background(Color.black.opacity(0.25))
@@ -80,6 +90,7 @@ struct ForTimeTabView: View {
                     .padding(.horizontal, 12)
             }
             Button("시작") {
+                dismissKeyboard()
                 startCountdown()
             }
             .buttonStyle(.borderedProminent)
@@ -151,6 +162,16 @@ struct ForTimeTabView: View {
 
     private func updateModePickerVisibility() {
         isModePickerVisible = !isRunning && countdown == nil
+    }
+
+    private var dismissalBackground: some View {
+        Color.clear
+            .contentShape(Rectangle())
+            .onTapGesture(perform: dismissKeyboard)
+    }
+
+    private func dismissKeyboard() {
+        focusedField = nil
     }
 
     private func startCountdown() {

@@ -7,6 +7,7 @@ import UserNotifications
 struct EmomTabView: View {
     @Binding var isModePickerVisible: Bool
     @EnvironmentObject private var heartRateManager: HeartRateManager
+    @FocusState private var focusedField: Field?
 
     @State private var intervalMinutes: Int = 1
     @State private var totalMinutes: Int = 15
@@ -22,6 +23,10 @@ struct EmomTabView: View {
     @State private var lastSyncedExercise: String = ""
 
     private let minuteOptions = Array(1...60)
+
+    private enum Field: Hashable {
+        case exercise
+    }
 
     private var exercises: [String] {
         TimerUtilities.parseExercises(exerciseInput)
@@ -41,15 +46,19 @@ struct EmomTabView: View {
     }
 
     var body: some View {
-        VStack(spacing: 24) {
-            if countdown == nil {
-                inputView
-            } else if let cd = countdown, cd > 0 {
-                countdownView(cd)
-            } else if isRunning {
-                runningView
-            } else {
-                completeView
+        ZStack {
+            dismissalBackground
+
+            VStack(spacing: 24) {
+                if countdown == nil {
+                    inputView
+                } else if let cd = countdown, cd > 0 {
+                    countdownView(cd)
+                } else if isRunning {
+                    runningView
+                } else {
+                    completeView
+                }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -92,6 +101,9 @@ struct EmomTabView: View {
 #if canImport(UIKit)
                     .textInputAutocapitalization(.never)
 #endif
+                    .focused($focusedField, equals: .exercise)
+                    .submitLabel(.done)
+                    .onSubmit(dismissKeyboard)
                     .padding(10)
                     .background(Color.black.opacity(0.25))
                     .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
@@ -104,6 +116,7 @@ struct EmomTabView: View {
                     .padding(.horizontal, 12)
             }
             Button("시작") {
+                dismissKeyboard()
                 startCountdown()
             }
             .buttonStyle(.borderedProminent)
@@ -169,6 +182,16 @@ struct EmomTabView: View {
 
     private func updateModePickerVisibility() {
         isModePickerVisible = !isRunning && countdown == nil
+    }
+
+    private var dismissalBackground: some View {
+        Color.clear
+            .contentShape(Rectangle())
+            .onTapGesture(perform: dismissKeyboard)
+    }
+
+    private func dismissKeyboard() {
+        focusedField = nil
     }
 
     private func startCountdown() {

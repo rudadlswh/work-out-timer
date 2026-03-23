@@ -1,0 +1,13 @@
+marketing/screenshots/apple-watch/raw/01-timer-running.png 368x448
+marketing/screenshots/apple-watch/raw/02-live-heart-rate.png 368x448
+marketing/screenshots/apple-watch/raw/03-active-session.png 368x448
+marketing/screenshots/iphone-6.9/final/01-quick-start.png 1320x2868
+marketing/screenshots/iphone-6.9/final/02-modes.png 1320x2868
+marketing/screenshots/iphone-6.9/final/03-watch-connection.png 1320x2868
+marketing/screenshots/iphone-6.9/final/04-live-heart-rate.png 1320x2868
+marketing/screenshots/iphone-6.9/final/05-glance.png 1320x2868
+marketing/screenshots/iphone-6.9/raw/01-quick-start.png 1320x2868
+marketing/screenshots/iphone-6.9/raw/02-modes.png 1320x2868
+marketing/screenshots/iphone-6.9/raw/03-watch-connection.png 1320x2868
+marketing/screenshots/iphone-6.9/raw/04-live-heart-rate.png 1320x2868
+marketing/screenshots/iphone-6.9/raw/05-glance.png 1320x2868

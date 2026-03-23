@@ -67,7 +67,7 @@ struct HIITWidgetView: View {
         switch family {
         case .systemSmall:
             VStack(spacing: 6) {
-                Text("HIIT 타이머")
+                Text("WODy")
                     .font(.headline)
                 Text("EMOM • AMRAP")
                     .font(.caption)
@@ -92,8 +92,8 @@ struct HIITWidget: Widget {
         StaticConfiguration(kind: kind, provider: HIITWidgetProvider()) { _ in
             HIITWidgetView()
         }
-        .configurationDisplayName("HIIT 타이머")
-        .description("빠르게 타이머를 시작하세요.")
+        .configurationDisplayName("WODy")
+        .description("WOD 타이머를 빠르게 시작하세요.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
