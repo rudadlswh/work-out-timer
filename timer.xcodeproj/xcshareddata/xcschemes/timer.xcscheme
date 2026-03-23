@@ -44,20 +44,6 @@
                ReferencedContainer = "container:timer.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "CF1179050BF60AA617AE13B3"
-               BuildableName = "timerWatchExtension.appex"
-               BlueprintName = "timerWatchExtension"
-               ReferencedContainer = "container:timer.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction

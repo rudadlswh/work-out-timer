@@ -189,12 +189,12 @@ struct SettingsView: View {
             Text("시뮬레이터나 연동 불가 상태에서도 심박수 UI를 확인할 수 있습니다.")
                 .font(.caption)
                 .foregroundStyle(TimerTheme.secondaryText)
-            statusRow(title: "측정 상태", value: heartRateManager.isCollecting ? "측정 중" : "대기")
+            statusRow(title: "측정 상태", value: heartRateManager.heartRateStatusText)
             statusRow(title: "현재 심박", value: heartRateManager.currentBpm.map { "\($0) bpm" } ?? "미수신")
             statusRow(title: "평균 심박", value: heartRateManager.averageBpm.map { "\($0) bpm" } ?? "미수신")
             statusRow(title: "마지막 수신", value: lastHeartRateTimeText)
 
-            Button(heartRateManager.isCollecting ? "심박 측정 중지" : "심박 측정 시작") {
+            Button(heartRateManager.isCollecting ? "심박 측정 중지" : (heartRateManager.isStartPending ? "시작 요청 중" : "심박 측정 시작")) {
                 if heartRateManager.isCollecting {
                     heartRateManager.stop()
                 } else {
@@ -203,6 +203,7 @@ struct SettingsView: View {
             }
             .buttonStyle(.bordered)
             .tint(heartRateManager.isCollecting ? TimerTheme.stopTint : TimerTheme.actionTint)
+            .disabled(heartRateManager.isStartPending && !heartRateManager.isCollecting)
 
             Text("워치 앱이 전면 실행 중일 때 실시간 심박이 수신됩니다.")
                 .font(.caption)

@@ -52,7 +52,7 @@ struct OnboardingView: View {
                 detail: "워치 앱 실행 중 실시간 타이머/심박을 확인할 수 있습니다."
             )
             featureRow(
-                icon: "dynamic.island",
+                icon: "apps.iphone",
                 title: "Live Activity",
                 detail: "홈 화면에서도 타이머 진행 상태를 확인합니다."
             )
