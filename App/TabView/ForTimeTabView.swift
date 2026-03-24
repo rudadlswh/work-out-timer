@@ -4,9 +4,12 @@ import ActivityKit
 #endif
 
 struct ForTimeTabView: View {
+    let mode: WorkoutMode
+    @Binding var selectedMode: WorkoutMode
     @Binding var isModePickerVisible: Bool
+    @Binding var isTimerSessionActive: Bool
     @EnvironmentObject private var heartRateManager: HeartRateManager
-    @FocusState private var focusedField: Field?
+    @FocusState private var isExerciseFieldFocused: Bool
 
     @State private var totalMinutes: Int = 30
     @State private var countdown: Int? = nil
@@ -20,10 +23,6 @@ struct ForTimeTabView: View {
     @State private var lastSyncedExerciseSummary: String = ""
 
     private let minuteOptions = Array(1...60)
-
-    private enum Field: Hashable {
-        case exercise
-    }
 
     private var exercises: [String] {
         TimerUtilities.parseExercises(exerciseInput)
@@ -39,11 +38,25 @@ struct ForTimeTabView: View {
 
             VStack(spacing: 24) {
                 if countdown == nil {
-                    inputView
+                    ForTimeSettingsView(
+                        minuteOptions: minuteOptions,
+                        totalMinutes: $totalMinutes,
+                        exerciseInput: $exerciseInput,
+                        exerciseFieldFocus: $isExerciseFieldFocused,
+                        onStart: {
+                            dismissKeyboard()
+                            startCountdown()
+                        }
+                    )
                 } else if let cd = countdown, cd > 0 {
                     countdownView(cd)
                 } else if isRunning {
-                    runningView
+                    ForTimeRunningView(
+                        elapsedTimeText: TimerUtilities.formatTime(elapsedSeconds),
+                        exercises: exercises,
+                        currentBpm: heartRateManager.currentBpm,
+                        onStop: stopTimer
+                    )
                 } else {
                     completeView
                 }
@@ -53,48 +66,8 @@ struct ForTimeTabView: View {
         .onAppear(perform: updateModePickerVisibility)
         .onChange(of: isRunning, initial: false) { _, _ in updateModePickerVisibility() }
         .onChange(of: countdown, initial: false) { _, _ in updateModePickerVisibility() }
-    }
-
-    private var inputView: some View {
-        VStack(spacing: 12) {
-            Text("FOR TIME 타이머 설정")
-                .font(.title2)
-                .foregroundStyle(TimerTheme.primaryText)
-            HStack(spacing: 12) {
-                Text("총 시간(분):")
-                    .foregroundStyle(TimerTheme.secondaryText)
-                Picker("총 시간(분)", selection: $totalMinutes) {
-                    ForEach(minuteOptions, id: \.self) { min in
-                        Text("\(min)분").tag(min)
-                    }
-                }
-                .pickerStyle(.menu)
-            }
-            VStack(alignment: .center, spacing: 6) {
-                Text("운동 목록")
-                    .font(.subheadline)
-                    .foregroundStyle(TimerTheme.secondaryText)
-                TextEditor(text: $exerciseInput)
-                    .scrollContentBackground(.hidden)
-                    .focused($focusedField, equals: .exercise)
-                    .frame(height: 90)
-                    .padding(8)
-                    .background(Color.black.opacity(0.25))
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                    )
-                    .foregroundStyle(TimerTheme.primaryText)
-                    .tint(TimerTheme.actionTint)
-                    .padding(.horizontal, 12)
-            }
-            Button("시작") {
-                dismissKeyboard()
-                startCountdown()
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(TimerTheme.actionTint)
+        .onReceive(NotificationCenter.default.publisher(for: TimerExternalControl.notificationName)) { _ in
+            handleExternalStopRequest()
         }
     }
 
@@ -103,41 +76,6 @@ struct ForTimeTabView: View {
             .font(.system(size: 64, weight: .bold))
             .foregroundStyle(TimerTheme.primaryText)
             .shadow(color: Color.black.opacity(0.25), radius: 3, x: 0, y: 2)
-    }
-
-    private var runningView: some View {
-        VStack(spacing: 20) {
-            Text("경과 시간")
-                .font(.headline)
-                .foregroundStyle(TimerTheme.secondaryText)
-            Text(TimerUtilities.formatTime(elapsedSeconds))
-                .font(.system(size: 48, weight: .bold))
-                .foregroundStyle(TimerTheme.primaryText)
-                .shadow(color: Color.black.opacity(0.25), radius: 3, x: 0, y: 2)
-            if let bpm = heartRateManager.currentBpm {
-                HeartRateMetricView(title: "현재 심박", bpm: bpm)
-            }
-            if exercises.isEmpty {
-                Text("운동 목록 없음")
-                    .font(.headline)
-                    .foregroundStyle(TimerTheme.secondaryText)
-            } else {
-                VStack(spacing: 6) {
-                    ForEach(Array(exercises.enumerated()), id: \.offset) { _, item in
-                        Text(item)
-                            .font(.headline)
-                            .foregroundStyle(TimerTheme.primaryText)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.6)
-                    }
-                }
-            }
-            Button("중지") {
-                stopTimer()
-            }
-            .buttonStyle(.bordered)
-            .tint(TimerTheme.stopTint)
-        }
     }
 
     private var completeView: some View {
@@ -161,6 +99,9 @@ struct ForTimeTabView: View {
     }
 
     private func updateModePickerVisibility() {
+        if selectedMode == mode {
+            isTimerSessionActive = isRunning || ((countdown ?? 0) > 0)
+        }
         isModePickerVisible = !isRunning && countdown == nil
     }
 
@@ -171,7 +112,7 @@ struct ForTimeTabView: View {
     }
 
     private func dismissKeyboard() {
-        focusedField = nil
+        isExerciseFieldFocused = false
     }
 
     private func startCountdown() {
@@ -229,6 +170,11 @@ struct ForTimeTabView: View {
         heartRateManager.stop()
         endLiveActivity()
         sendIdleState()
+    }
+
+    private func handleExternalStopRequest() {
+        guard isRunning || ((countdown ?? 0) > 0) else { return }
+        stopTimer()
     }
 
     private func resetAll() {

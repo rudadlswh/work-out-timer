@@ -5,9 +5,12 @@ import ActivityKit
 import UserNotifications
 
 struct EmomTabView: View {
+    let mode: WorkoutMode
+    @Binding var selectedMode: WorkoutMode
     @Binding var isModePickerVisible: Bool
+    @Binding var isTimerSessionActive: Bool
     @EnvironmentObject private var heartRateManager: HeartRateManager
-    @FocusState private var focusedField: Field?
+    @FocusState private var isExerciseFieldFocused: Bool
 
     @State private var intervalMinutes: Int = 1
     @State private var totalMinutes: Int = 15
@@ -23,10 +26,6 @@ struct EmomTabView: View {
     @State private var lastSyncedExercise: String = ""
 
     private let minuteOptions = Array(1...60)
-
-    private enum Field: Hashable {
-        case exercise
-    }
 
     private var exercises: [String] {
         TimerUtilities.parseExercises(exerciseInput)
@@ -51,11 +50,29 @@ struct EmomTabView: View {
 
             VStack(spacing: 24) {
                 if countdown == nil {
-                    inputView
+                    EmomSettingsView(
+                        minuteOptions: minuteOptions,
+                        intervalMinutes: $intervalMinutes,
+                        totalMinutes: $totalMinutes,
+                        exerciseInput: $exerciseInput,
+                        exerciseFieldFocus: $isExerciseFieldFocused,
+                        onSubmit: dismissKeyboard,
+                        onStart: {
+                            dismissKeyboard()
+                            startCountdown()
+                        }
+                    )
                 } else if let cd = countdown, cd > 0 {
                     countdownView(cd)
                 } else if isRunning {
-                    runningView
+                    let info = currentRoundInfo()
+                    EmomRunningView(
+                        roundLabel: info.label,
+                        exercise: info.exercise,
+                        currentBpm: heartRateManager.currentBpm,
+                        displayTime: TimerUtilities.formatTime(nextBeep),
+                        onStop: stopTimer
+                    )
                 } else {
                     completeView
                 }
@@ -65,62 +82,8 @@ struct EmomTabView: View {
         .onAppear(perform: updateModePickerVisibility)
         .onChange(of: isRunning, initial: false) { _, _ in updateModePickerVisibility() }
         .onChange(of: countdown, initial: false) { _, _ in updateModePickerVisibility() }
-    }
-
-    private var inputView: some View {
-        VStack(spacing: 12) {
-            Text("EMOM 타이머 설정")
-                .font(.title2)
-                .foregroundStyle(TimerTheme.primaryText)
-            HStack {
-                Text("인터벌(분):")
-                    .foregroundStyle(TimerTheme.secondaryText)
-                Picker("인터벌(분)", selection: $intervalMinutes) {
-                    ForEach(minuteOptions, id: \.self) { min in
-                        Text("\(min)분").tag(min)
-                    }
-                }
-                .pickerStyle(.menu)
-            }
-            HStack(spacing: 12) {
-                Text("총 시간(분):")
-                    .foregroundStyle(TimerTheme.secondaryText)
-                Picker("총 시간(분)", selection: $totalMinutes) {
-                    ForEach(minuteOptions, id: \.self) { min in
-                        Text("\(min)분").tag(min)
-                    }
-                }
-                .pickerStyle(.menu)
-            }
-            VStack(alignment: .center, spacing: 6) {
-                Text("운동 목록(쉼표로 구분)")
-                    .font(.subheadline)
-                    .foregroundStyle(TimerTheme.secondaryText)
-                TextField("",text: $exerciseInput)
-                    .disableAutocorrection(true)
-#if canImport(UIKit)
-                    .textInputAutocapitalization(.never)
-#endif
-                    .focused($focusedField, equals: .exercise)
-                    .submitLabel(.done)
-                    .onSubmit(dismissKeyboard)
-                    .padding(10)
-                    .background(Color.black.opacity(0.25))
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                    )
-                    .foregroundStyle(TimerTheme.primaryText)
-                    .tint(TimerTheme.actionTint)
-                    .padding(.horizontal, 12)
-            }
-            Button("시작") {
-                dismissKeyboard()
-                startCountdown()
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(TimerTheme.actionTint)
+        .onReceive(NotificationCenter.default.publisher(for: TimerExternalControl.notificationName)) { _ in
+            handleExternalStopRequest()
         }
     }
 
@@ -129,38 +92,6 @@ struct EmomTabView: View {
             .font(.system(size: 64, weight: .bold))
             .foregroundStyle(TimerTheme.primaryText)
             .shadow(color: Color.black.opacity(0.25), radius: 3, x: 0, y: 2)
-    }
-
-    private var runningView: some View {
-        let info = currentRoundInfo()
-
-        return VStack(spacing: 32) {
-            Text(info.label)
-                .font(.system(size: 48, weight: .bold))
-                .foregroundStyle(TimerTheme.primaryText)
-                .shadow(color: Color.black.opacity(0.25), radius: 3, x: 0, y: 2)
-            VStack(spacing: 8) {
-                Text("이번 동작")
-                    .font(.headline)
-                    .foregroundStyle(TimerTheme.secondaryText)
-                Text(info.exercise)
-                    .font(.system(size: 36, weight: .bold))
-                    .foregroundStyle(TimerTheme.primaryText)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.6)
-            }
-            if let bpm = heartRateManager.currentBpm {
-                HeartRateMetricView(title: "현재 심박", bpm: bpm)
-            }
-            Text(TimerUtilities.formatTime(nextBeep))
-                .font(.system(size: 32, weight: .semibold))
-                .foregroundStyle(TimerTheme.secondaryText)
-            Button("중지") {
-                stopTimer()
-            }
-            .buttonStyle(.bordered)
-            .tint(TimerTheme.stopTint)
-        }
     }
 
     private var completeView: some View {
@@ -181,6 +112,9 @@ struct EmomTabView: View {
     }
 
     private func updateModePickerVisibility() {
+        if selectedMode == mode {
+            isTimerSessionActive = isRunning || ((countdown ?? 0) > 0)
+        }
         isModePickerVisible = !isRunning && countdown == nil
     }
 
@@ -191,7 +125,7 @@ struct EmomTabView: View {
     }
 
     private func dismissKeyboard() {
-        focusedField = nil
+        isExerciseFieldFocused = false
     }
 
     private func startCountdown() {
@@ -255,6 +189,11 @@ struct EmomTabView: View {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
         endLiveActivity()
         sendIdleState()
+    }
+
+    private func handleExternalStopRequest() {
+        guard isRunning || ((countdown ?? 0) > 0) else { return }
+        stopTimer()
     }
 
     private func resetAll() {

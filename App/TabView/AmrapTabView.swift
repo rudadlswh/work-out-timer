@@ -5,9 +5,12 @@ import ActivityKit
 #endif
 
 struct AmrapTabView: View {
+    let mode: WorkoutMode
+    @Binding var selectedMode: WorkoutMode
     @Binding var isModePickerVisible: Bool
+    @Binding var isTimerSessionActive: Bool
     @EnvironmentObject private var heartRateManager: HeartRateManager
-    @FocusState private var focusedField: Field?
+    @FocusState private var isExerciseFieldFocused: Bool
 
     @State private var totalMinutes: Int = 20
     @State private var countdown: Int? = nil
@@ -24,10 +27,6 @@ struct AmrapTabView: View {
 
     private let minuteOptions = Array(1...60)
 
-    private enum Field: Hashable {
-        case exercise
-    }
-
     private var exercises: [String] {
         TimerUtilities.parseExercises(exerciseInput)
     }
@@ -42,11 +41,27 @@ struct AmrapTabView: View {
 
             VStack(spacing: 24) {
                 if countdown == nil {
-                    inputView
+                    AmrapSettingsView(
+                        minuteOptions: minuteOptions,
+                        totalMinutes: $totalMinutes,
+                        endAlertEnabled: $endAlertEnabled,
+                        exerciseInput: $exerciseInput,
+                        exerciseFieldFocus: $isExerciseFieldFocused,
+                        onStart: {
+                            dismissKeyboard()
+                            startCountdown()
+                        }
+                    )
                 } else if let cd = countdown, cd > 0 {
                     countdownView(cd)
                 } else if isRunning {
-                    runningView
+                    AmrapRunningView(
+                        rounds: rounds,
+                        exercises: exercises,
+                        remainingTimeText: TimerUtilities.formatTime(remainingSeconds),
+                        currentBpm: heartRateManager.currentBpm,
+                        onStop: stopTimer
+                    )
                 } else {
                     completeView
                 }
@@ -65,58 +80,8 @@ struct AmrapTabView: View {
         .onAppear(perform: updateModePickerVisibility)
         .onChange(of: isRunning, initial: false) { _, _ in updateModePickerVisibility() }
         .onChange(of: countdown, initial: false) { _, _ in updateModePickerVisibility() }
-    }
-
-    private var inputView: some View {
-        VStack(spacing: 12) {
-            Text("AMRAP 타이머 설정")
-                .font(.title2)
-                .foregroundStyle(TimerTheme.primaryText)
-            HStack(spacing: 12) {
-                Text("총 시간(분):")
-                    .foregroundStyle(TimerTheme.secondaryText)
-                Picker("총 시간(분)", selection: $totalMinutes) {
-                    ForEach(minuteOptions, id: \.self) { min in
-                        Text("\(min)분").tag(min)
-                    }
-                }
-                .pickerStyle(.menu)
-                Button(action: { endAlertEnabled.toggle() }) {
-                    HStack(spacing: 6) {
-                        Text("끝 알람")
-                            .font(.subheadline)
-                            .foregroundStyle(TimerTheme.secondaryText)
-                        Image(systemName: endAlertEnabled ? "checkmark.square.fill" : "square")
-                            .foregroundStyle(endAlertEnabled ? TimerTheme.actionTint : TimerTheme.secondaryText)
-                    }
-                }
-                .buttonStyle(.plain)
-            }
-            VStack(alignment: .center, spacing: 6) {
-                Text("운동 목록")
-                    .font(.subheadline)
-                    .foregroundStyle(TimerTheme.secondaryText)
-                TextEditor(text: $exerciseInput)
-                    .scrollContentBackground(.hidden)
-                    .focused($focusedField, equals: .exercise)
-                    .frame(height: 90)
-                    .padding(8)
-                    .background(Color.black.opacity(0.25))
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                    )
-                    .foregroundStyle(TimerTheme.primaryText)
-                    .tint(TimerTheme.actionTint)
-                    .padding(.horizontal, 12)
-            }
-            Button("시작") {
-                dismissKeyboard()
-                startCountdown()
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(TimerTheme.actionTint)
+        .onReceive(NotificationCenter.default.publisher(for: TimerExternalControl.notificationName)) { _ in
+            handleExternalStopRequest()
         }
     }
 
@@ -125,44 +90,6 @@ struct AmrapTabView: View {
             .font(.system(size: 64, weight: .bold))
             .foregroundStyle(TimerTheme.primaryText)
             .shadow(color: Color.black.opacity(0.25), radius: 3, x: 0, y: 2)
-    }
-
-    private var runningView: some View {
-        VStack(spacing: 20) {
-            Text("라운드 \(rounds)")
-                .font(.system(size: 32, weight: .bold))
-                .foregroundStyle(TimerTheme.primaryText)
-            if exercises.isEmpty {
-                Text("운동 목록 없음")
-                    .font(.headline)
-                    .foregroundStyle(TimerTheme.secondaryText)
-            } else {
-                VStack(spacing: 6) {
-                    ForEach(Array(exercises.enumerated()), id: \.offset) { _, item in
-                        Text(item)
-                            .font(.headline)
-                            .foregroundStyle(TimerTheme.primaryText)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.6)
-                    }
-                }
-            }
-            Text(TimerUtilities.formatTime(remainingSeconds))
-                .font(.system(size: 48, weight: .bold))
-                .foregroundStyle(TimerTheme.primaryText)
-                .shadow(color: Color.black.opacity(0.25), radius: 3, x: 0, y: 2)
-            if let bpm = heartRateManager.currentBpm {
-                HeartRateMetricView(title: "현재 심박", bpm: bpm)
-            }
-            Text("더블탭: 라운드 +1")
-                .font(.footnote)
-                .foregroundStyle(TimerTheme.secondaryText)
-            Button("중지") {
-                stopTimer()
-            }
-            .buttonStyle(.bordered)
-            .tint(TimerTheme.stopTint)
-        }
     }
 
     private var completeView: some View {
@@ -186,6 +113,9 @@ struct AmrapTabView: View {
     }
 
     private func updateModePickerVisibility() {
+        if selectedMode == mode {
+            isTimerSessionActive = isRunning || ((countdown ?? 0) > 0)
+        }
         isModePickerVisible = !isRunning && countdown == nil
     }
 
@@ -196,7 +126,7 @@ struct AmrapTabView: View {
     }
 
     private func dismissKeyboard() {
-        focusedField = nil
+        isExerciseFieldFocused = false
     }
 
     private func startCountdown() {
@@ -262,6 +192,11 @@ struct AmrapTabView: View {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
         endLiveActivity()
         sendIdleState()
+    }
+
+    private func handleExternalStopRequest() {
+        guard isRunning || ((countdown ?? 0) > 0) else { return }
+        stopTimer()
     }
 
     private func resetAll() {
