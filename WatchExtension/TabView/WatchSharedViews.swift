@@ -8,7 +8,6 @@ struct PhoneTimerStatusView: View {
 
     var body: some View {
         let isComplete = state.phase == "complete"
-        let isForTime = state.mode == WatchWorkoutMode.forTime.rawValue
 
         if isComplete {
             contentView(displaySeconds: state.displaySeconds)
