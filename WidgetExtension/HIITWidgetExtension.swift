@@ -1,6 +1,7 @@
 import WidgetKit
 import ActivityKit
 import SwiftUI
+import AppIntents
 
 struct HIITWidgetEntry: TimelineEntry {
     let date: Date
@@ -103,22 +104,56 @@ struct HIITActivityWidget: Widget {
         ActivityConfiguration(for: HIITAttributes.self) { context in
             // Lock screen/banner UI
             let timerDate = timerDate(from: context.state)
-            VStack {
-                Text(context.state.label)
-                Text(timerDate, style: .timer)
-                    .font(.largeTitle.monospacedDigit())
+            let showsStopAction = shouldShowStopAction(for: context.state)
+            VStack(spacing: 12) {
+                HStack(alignment: .firstTextBaseline, spacing: 0) {
+                    Text("남은 시간")
+                        .font(.headline)
+                        .lineLimit(1)
+                    Spacer()
+                    Text(timerDate, style: .timer)
+                        .font(.system(size: 34, weight: .bold, design: .rounded).monospacedDigit())
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                }
+                .padding(.horizontal, 8)
+                if showsStopAction {
+                    Button(intent: StopTimerLiveActivityIntent()) {
+                        Label("종료", systemImage: "stop.fill")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.red)
+                    .accessibilityLabel("타이머 종료")
+                }
             }
             .padding()
         } dynamicIsland: { context in
             let timerDate = timerDate(from: context.state)
             let isEmom = context.attributes.mode == "EMOM"
+            let showsStopAction = shouldShowStopAction(for: context.state)
             return DynamicIsland {
                 // Expanded UI
                 DynamicIslandExpandedRegion(.center) {
-                    VStack {
-                        Text(context.state.label)
-                        Text(timerDate, style: .timer)
-                            .font(.title.monospacedDigit())
+                    VStack(spacing: 10) {
+                        HStack(alignment: .firstTextBaseline, spacing: 0) {
+                            Text("남은 시간")
+                                .font(.subheadline)
+                                .lineLimit(1)
+                            Spacer()
+                            Text(timerDate, style: .timer)
+                                .font(.title2.monospacedDigit())
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.75)
+                        }
+                        .padding(.horizontal, 6)
+                        if showsStopAction {
+                            Button(intent: StopTimerLiveActivityIntent()) {
+                                Label("종료", systemImage: "stop.fill")
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .tint(.red)
+                            .accessibilityLabel("타이머 종료")
+                        }
                     }
                 }
             } compactLeading: {
@@ -150,6 +185,21 @@ private func timerDate(from state: HIITAttributes.ContentState) -> Date {
         return state.sentAt.addingTimeInterval(TimeInterval(max(0, state.displaySeconds)))
     }
     return state.sentAt.addingTimeInterval(TimeInterval(-max(0, state.displaySeconds)))
+}
+
+private func shouldShowStopAction(for state: HIITAttributes.ContentState) -> Bool {
+    state.isRunning || state.isCountdown
+}
+
+struct StopTimerLiveActivityIntent: LiveActivityIntent {
+    static var title: LocalizedStringResource = "Stop Timer"
+    static var description = IntentDescription("Ends the active timer session.")
+    static var openAppWhenRun: Bool = false
+
+    func perform() async throws -> some IntentResult {
+        await TimerSessionTermination.requestStopFromLiveActivity()
+        return .result()
+    }
 }
 
 #if APP_EXTENSION
