@@ -97,6 +97,7 @@ final class HeartRateManager: NSObject, ObservableObject {
     private var dummyBpm: Int = 95
     private var dummyDirection: Int = 1
     private var isActivatingSession: Bool = false
+    private var pendingTimerStatePayload: [String: Any]?
     private var remoteState: RemoteHeartRateState = .idle
     private var remoteStateDetail: String?
     private let logger = Logger(
@@ -280,6 +281,10 @@ final class HeartRateManager: NSObject, ObservableObject {
             self.isWatchAppInstalled = isInstalled
             self.isReachable = isReachable
             self.activationStateText = activationText
+            if self.canSend(to: session), let pendingPayload = self.pendingTimerStatePayload {
+                self.pendingTimerStatePayload = nil
+                self.sendMessageOrContext(pendingPayload)
+            }
             if self.pendingPing, isReachable, let pingId = self.currentPingId {
                 self.sendPingMessage(session, pingId: pingId)
             }
@@ -446,7 +451,13 @@ final class HeartRateManager: NSObject, ObservableObject {
         guard let session else { return }
 
         ensureSessionActivated()
-        guard canSend(to: session) else { return }
+        guard canSend(to: session) else {
+            if session.activationState != .activated {
+                pendingTimerStatePayload = payload
+            }
+            return
+        }
+        pendingTimerStatePayload = nil
 
         if session.isReachable {
             logger.debug("Sending live payload type=\((payload["type"] as? String) ?? "unknown", privacy: .public)")
