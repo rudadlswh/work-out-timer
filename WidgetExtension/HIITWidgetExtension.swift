@@ -105,18 +105,22 @@ struct HIITActivityWidget: Widget {
             // Lock screen/banner UI
             let timerDate = timerDate(from: context.state)
             let showsStopAction = shouldShowStopAction(for: context.state)
-            VStack(spacing: 12) {
-                HStack(alignment: .firstTextBaseline, spacing: 0) {
+            VStack(spacing: 20) {
+                HStack(alignment: .firstTextBaseline, spacing: 12) {
                     Text("남은 시간")
+                        .font(.system(size: 30, weight: .bold, design: .rounded).monospacedDigit())
                         .font(.headline)
                         .lineLimit(1)
                     Spacer()
                     Text(timerDate, style: .timer)
                         .font(.system(size: 34, weight: .bold, design: .rounded).monospacedDigit())
+                        .monospacedDigit()
                         .lineLimit(1)
                         .minimumScaleFactor(0.75)
+                        .multilineTextAlignment(.trailing)
                 }
-                .padding(.horizontal, 8)
+                .frame(maxWidth: .infinity)
+
                 if showsStopAction {
                     Button(intent: StopTimerLiveActivityIntent()) {
                         Label("종료", systemImage: "stop.fill")
@@ -126,7 +130,8 @@ struct HIITActivityWidget: Widget {
                     .accessibilityLabel("타이머 종료")
                 }
             }
-            .padding()
+            .padding(.horizontal, 28)
+            .padding(.vertical, 24)
         } dynamicIsland: { context in
             let timerDate = timerDate(from: context.state)
             let isEmom = context.attributes.mode == "EMOM"
