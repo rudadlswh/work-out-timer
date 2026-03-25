@@ -26,5 +26,7 @@
 	<string>com.chogm.timer</string>
 	<key>WKSupportsRunningWithoutiOSApp</key>
 	<false/>
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <false/>
 </dict>
 </plist>
