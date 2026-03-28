@@ -46,11 +46,7 @@ struct OnboardingView: View {
                 title: "운동 목록",
                 detail: "쉼표 또는 줄바꿈으로 입력하면 순서대로 표시됩니다."
             )
-            featureRow(
-                icon: "applewatch",
-                title: "Apple Watch 연동",
-                detail: "워치 앱 실행 중 실시간 타이머/심박을 확인할 수 있습니다."
-            )
+            // TODO: Re-enable HealthKit after App Review fix.
             featureRow(
                 icon: "apps.iphone",
                 title: "Live Activity",
@@ -72,8 +68,8 @@ struct OnboardingView: View {
                 .font(.headline)
                 .foregroundStyle(TimerTheme.primaryText)
             Text("- AMRAP은 실행 화면 더블탭으로 라운드를 추가합니다.")
-            Text("- 워치 연동은 iPhone/Watch 모두 앱 실행 중일 때 가장 안정적입니다.")
-            Text("- 설정에서 Apple Watch 연결과 심박 상태를 확인할 수 있습니다.")
+            Text("- 운동 목록은 쉼표 또는 줄바꿈으로 입력할 수 있습니다.")
+            Text("- 설정에서 기능 안내를 다시 볼 수 있습니다.")
         }
         .font(.subheadline)
         .foregroundStyle(TimerTheme.secondaryText)

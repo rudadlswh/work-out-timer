@@ -65,6 +65,10 @@ private enum RemoteHeartRateState: String {
 }
 
 final class HeartRateManager: NSObject, ObservableObject {
+    // TODO: Re-enable HealthKit after App Review fix.
+    static let isHeartRateFeatureEnabled: Bool = false
+    var isHeartRateFeatureTemporarilyDisabled: Bool { !Self.isHeartRateFeatureEnabled }
+
     @Published var currentBpm: Int?
     @Published var averageBpm: Int?
     @Published var isCollecting: Bool = false
@@ -106,6 +110,7 @@ final class HeartRateManager: NSObject, ObservableObject {
     )
 
     private static let defaultDummyHeartRateEnabled: Bool = {
+        guard isHeartRateFeatureEnabled else { return false }
     #if targetEnvironment(simulator)
         return true
     #else
@@ -126,10 +131,19 @@ final class HeartRateManager: NSObject, ObservableObject {
         logger.info("WCSession supported: \(supported, privacy: .public)")
         ensureSessionActivated()
         updateSessionState()
-        applyRemoteState(.idle)
+        if Self.isHeartRateFeatureEnabled {
+            applyRemoteState(.idle)
+        } else {
+            applyReviewDisabledState()
+        }
     }
 
     func start() {
+        guard Self.isHeartRateFeatureEnabled else {
+            applyReviewDisabledState()
+            return
+        }
+
         resetMetrics()
         if useDummyHeartRate {
             applyRemoteState(.collectingNoSamples)
@@ -142,6 +156,11 @@ final class HeartRateManager: NSObject, ObservableObject {
     }
 
     func stop() {
+        guard Self.isHeartRateFeatureEnabled else {
+            applyReviewDisabledState()
+            return
+        }
+
         stopDummyHeartRate()
         if useDummyHeartRate {
             applyRemoteState(.idle)
@@ -153,12 +172,21 @@ final class HeartRateManager: NSObject, ObservableObject {
     }
 
     func reset() {
+        if !Self.isHeartRateFeatureEnabled {
+            applyReviewDisabledState()
+            return
+        }
+
         stopDummyHeartRate()
         resetMetrics()
         applyRemoteState(.idle)
     }
 
     func setDummyHeartRateEnabled(_ enabled: Bool) {
+        guard Self.isHeartRateFeatureEnabled else {
+            useDummyHeartRate = false
+            return
+        }
         useDummyHeartRate = enabled
     }
 
@@ -168,6 +196,11 @@ final class HeartRateManager: NSObject, ObservableObject {
     }
 
     func pingWatch() {
+        guard Self.isHeartRateFeatureEnabled else {
+            updatePingStatus(result: "사용 안 함", success: false)
+            return
+        }
+
         guard WCSession.isSupported() else {
             updatePingStatus(result: "세션 미지원", success: false)
             return
@@ -211,6 +244,12 @@ final class HeartRateManager: NSObject, ObservableObject {
     }
 
     private func updateDummyMode() {
+        guard Self.isHeartRateFeatureEnabled else {
+            stopDummyHeartRate()
+            applyReviewDisabledState()
+            return
+        }
+
         if useDummyHeartRate {
             stopDummyHeartRate()
             if isCollecting {
@@ -221,6 +260,16 @@ final class HeartRateManager: NSObject, ObservableObject {
             stopDummyHeartRate()
             resetMetrics()
             applyRemoteState(.idle)
+        }
+    }
+
+    private func applyReviewDisabledState() {
+        stopDummyHeartRate()
+        resetMetrics()
+        DispatchQueue.main.async {
+            self.isCollecting = false
+            self.isStartPending = false
+            self.heartRateStatusText = "일시 비활성화"
         }
     }
 
@@ -548,12 +597,13 @@ extension HeartRateManager: WCSessionDelegate {
     }
 
     private func handleHeartRateMessage(_ message: [String: Any]) {
-        guard !useDummyHeartRate else { return }
-
         if message["pong"] as? Bool != nil {
             handlePong(message)
             return
         }
+
+        guard Self.isHeartRateFeatureEnabled else { return }
+        guard !useDummyHeartRate else { return }
 
         if let stateValue = message["heartRateState"] as? String,
            let state = RemoteHeartRateState(rawValue: stateValue) {
@@ -577,6 +627,8 @@ extension HeartRateManager: WCSessionDelegate {
 }
 #else
 final class HeartRateManager: ObservableObject {
+    static let isHeartRateFeatureEnabled: Bool = false
+
     @Published var currentBpm: Int?
     @Published var averageBpm: Int?
     @Published var isCollecting: Bool = false
@@ -593,6 +645,7 @@ final class HeartRateManager: ObservableObject {
     @Published var heartRateStatusText: String = "지원 안 됨"
     @Published var isStartPending: Bool = false
     @Published var useDummyHeartRate: Bool = false
+    var isHeartRateFeatureTemporarilyDisabled: Bool { !Self.isHeartRateFeatureEnabled }
 
     func start() {}
     func stop() {}

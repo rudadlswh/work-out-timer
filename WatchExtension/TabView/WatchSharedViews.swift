@@ -39,10 +39,6 @@ struct PhoneTimerStatusView: View {
             if isComplete {
                 if let averageBpm {
                     WatchHeartRateView(title: "평균 심박", bpm: averageBpm)
-                } else {
-                    Text("평균 심박 없음")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
                 }
             } else if let bpm {
                 WatchHeartRateView(title: "현재 심박", bpm: bpm)
